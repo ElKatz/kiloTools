@@ -1,5 +1,5 @@
-function [samples, datPath] = convertPlxToRawBInary(fullPathPlx, opts)
-%   [samples, datPath] = convertPlxToRawBInary(fullPathPlx, opts)
+function [samples, datPath] = convertPlxToDat(fullPathPlx, opts)
+%   [samples, datPath] = convertPlxToDat(fullPathPlx, opts)
 %
 % Converts continuous data from plx file to matrix 'samples' of size:
 % [nSamples, nChannels] and saves as binary .dat file in same folder as plx
