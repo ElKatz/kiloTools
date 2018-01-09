@@ -18,12 +18,13 @@ masterMegaFile - includes the 3 core files from the kilosort repo (masterfile, c
 ### convert to binary:
 Run the conversion script appropriate to your raw data. 
 
-if plx - `convertPlxToRawBInary.m`
-if alphaLab - `yyyyy`
+- if plx - `convertPlxToRawBInary.m`
 
-if open ephys - `xxxxx`
+- if alphaLab - `yyyyy`
 
-this saves 3 files:
+- if open ephys - `xxxxx`
+
+This saves 3 files:
 
 (1) a [nChannels x nSamples] .dat file 
 
