@@ -4,7 +4,7 @@ Basic tools for spikesorting ephys data with kiloSort.
 The repo has a number of functions that take user from raw ephys data to a user friedly(-ish) class 'neuron' of size nNeurons with associated neuron-based methods. 
 
 ## Organization
-### conversion - 
+*conversion* - 
 `convertPlxToRawBInary.m` - converts raw plx files to binary foramt appropriate for kilo (.dat).
 also extracts timing information and constructs a time vector, along with the times at which strobed evets take place. 
 ### preprocessing - 
