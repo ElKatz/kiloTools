@@ -1,13 +1,15 @@
-function [samples, datPath] = convertPlxToDat(fullPathPlx, opts)
-%   [samples, datPath] = convertPlxToDat(fullPathPlx, opts)
+function [samples, datPath] = convertPlxToDat(dataFullPath, opts)
+%   [samples, datPath] = convertPlxToDat(dataFullPath, opts)
 %
 % Converts continuous data from plx file to matrix 'samples' of size:
 % [nSamples, nChannels] and saves as binary .dat file in same folder as plx
 % file (unless specified otherwise in opts)
 % INPUT:
-%   fullPathPlx - full path to plx file that contains continuous data, or
-%                 path to folder that contains mulitple plx files to be
-%                 concatenated.
+%   dataFullPath - full path to ephys data file. This file can be 'plx', 
+%                  'mpx', 'oe', whatever, as long as it contains the 
+%                  continuous voltage traces.
+% 
+% !!!!! AT THE MOMENT, THIS FUNCTION ONLY DEALS WITH plx FILES !!!!!
 %
 %   opts - (optional) struct of options:
 %   .outputFolder - full path to folder to save dat file (default: same
@@ -17,28 +19,35 @@ function [samples, datPath] = convertPlxToDat(fullPathPlx, opts)
 %   samples - [nChannels, nSamples] consisting of all continuous data
 %   datPath - path to the .dat file
 
-% 20170417 - lnk & arb: bare bones
-% 20170525 - lnk: added concatenation option
-%                 added saving of strobes, time stamps
-%                 added mat bkp
 
 % 2do:
-% need to figure out how to get continuous channel string. is it the same
-% for amar's plx files and my mpx coverted to plx files?
+% generalize the identificaiton of continuous channel strings so that it
+% works on plexon, alphaLab, openEphys etc...
+%
+% generalize to multiple file formats. vet. 
 
 
 %% paths:
-
 addpath(genpath('~/Dropbox/Code/spike_sorting/toolboxes/Matlab Offline Files SDK'));
 addpath(genpath('~/Dropbox/Code/repos/pdstools/dependencies'));
 
-%% get plx files:
+%% data file & folder names:
+
+dataFileType = 'plx';
+
 if ~exist('fullPathPlx', 'var')
-    [plxFileName, plxFolder] = uigetfile('*.*', 'Select plx file for conversion', '~/Dropbox/Code/spike_sorting/');
+    [dataFileName, dataFolder] = uigetfile(['*.' dataFileType], 'Select files for conversion', '~/Dropbox/Code/spike_sorting/');
 else
-    [plxFolder, plxFileName, ext]  = fileparts(fullPathPlx);
-    plxFileName = [plxFileName ext];
+    [dataFolder, dataFileName, dataFileType]  = fileparts(dataFullPath);
+    dataFileName = [dataFileName dataFileType];
+    assert(strcmp(dataFileType, 'plx'), 'CAN ONLY DEAL WITH plx FILES. FOR NOW');
 end
+
+% full path to plx file:
+dataFullPath = fullfile(dataFolder, dataFileName);
+
+% datasetname:
+dsn = dataFileName(1:end-4);
 
 %% optional arguements:
 % init:
@@ -50,13 +59,13 @@ end
 if exist('opts', 'var') &&  isfield(opts, 'outputFolder')
     outputFolder = opts.outputFolder;
 else
-    outputFolder = plxFolder;
+    outputFolder = dataFolder;
 end
 
-%% file names for EPHYS .dat file & TIMESTAMPS .mat file:
+%% file names for .dat file (EPHYS) & .mat file (Timestamps and info):
 
-% EPHYS: dat file name is named after plx file:
-datPath = fullfile(outputFolder, [plxFileName '.dat']);
+% EPHYS: dat file named after dsn:
+datPath = fullfile(outputFolder, [dsn '.dat']);
 if exist(datPath, 'file')
     fprintf('Warning: file %s already exists\n', datPath)
     ret = input('Overwrite? (y/n)');
@@ -70,20 +79,17 @@ if exist(datPath, 'file')
     end
 end
 
-% TIMESTAMPS: mat file name is named after the plx file + 'TS' suffix:
-tsPath = fullfile(outputFolder, [plxFileName 'TS.mat']);
+% TIMESTAMPS & INFO: mat file named after dsn:
+tsPath = fullfile(outputFolder, [dsn '.mat']);
 
 %% begin conversion:
 
 disp('--------------------------------------------------------------')
-fprintf('Performing conversion of %s\n', plxFileName)
+fprintf('Performing conversion of %s\n', dsn)
 disp('--------------------------------------------------------------')
 
-% full path to plx file:
-fullPathPlx = fullfile(plxFolder, plxFileName);
-
 % create a list of all ad continuous channel names in cell array:
-[nCh, adChName]     = plx_adchan_names(fullPathPlx);
+[nCh, adChName]     = plx_adchan_names(dataFullPath);
 chNameList = cell(nCh,1);
 for ii = 1:nCh
     chNameList{ii} = adChName(ii,:);
@@ -104,7 +110,7 @@ end
 
 % get number of spikes counts per ad channel and get indices for those that
 % have data:
-[~, samplecounts] = plx_adchan_samplecounts(fullPathPlx);
+[~, samplecounts] = plx_adchan_samplecounts(dataFullPath);
 idxDataCh = samplecounts~=0;
 
 % get indices for channels that are both spk channels & have data:
@@ -120,13 +126,13 @@ samples     = zeros(nChannels, nSamples, 'int16');
 tChRead     = nan(nChannels,1); % time keeping
 
 % gotta map out indices to plxeon's ad channel numbers:
-[~,   adChNumber]   = plx_ad_chanmap(fullPathPlx);
+[~,   adChNumber]   = plx_ad_chanmap(dataFullPath);
 spkChNumber = adChNumber(idxGoodCh);
 
 disp(['Getting data from ' num2str(sum(idxGoodCh)) ' spike channels!'])
 for iCh = 1:nChannels
     tic
-    [~, n, ~, ~, ad] = plx_ad(fullPathPlx, spkChNumber(iCh)); % returns signal in miliVolts
+    [~, n, ~, ~, ad] = plx_ad(dataFullPath, spkChNumber(iCh)); % returns signal in miliVolts
     if n>0
         tChRead(iCh) = toc;
         fprintf('Took me %0.3f secs to read channel #%0.0d \n', tChRead(iCh), spkChNumber(iCh));
@@ -144,6 +150,9 @@ fwrite(fidout, samples, 'int16');
 fclose(fidout);
 
 %%  constrcut a time vector (in plexon time):
+% tsMap - time vector
+% evTs - event timestamp
+% evSv - event strobe value
 
 % We're going to construct "tsMap" that has a timestamp for every sample
 % recorded. We'll do this in steps, one for each PLX file. The tsMap vector
@@ -157,6 +166,7 @@ fclose(fidout);
 % PLX file accordingly.
 
 % get timestamps start values (tsStartVals) at start of each fragment:
+disp('Getting plexon timestamps for ad samples');
 [adfreq, ~, ts, fn, ~] = plx_ad_gap(plxFile, spkChNumber(1));
 
 % loop over recording fragments
@@ -168,10 +178,27 @@ for ii = 1:length(fn)
     currSample = currSample + fn(ii);
 end
 
-% write strobed TS and values, and tsMap to the firectory with the PLX file(s).
-save(tsPath, 'tsMap', '-v7.3');
+disp('Getting plexon timestamps for strobed events');
+strbChNumber = 257; % !!! this is true for rig A/B. verify this is true for your rig too...
+[~, evTs, evSv] = plx_event_ts(plxFile, strbChNumber);
 
 
+% add meta info:
+info.dsn             = dsn;
+info.dataFolder      = dataFolder;
+info.dataFile        = dataFile;
+info.dataFullPath    = dataFullPath;
+info.dataFileType    = dataFileType;
+info.spkChNumber     = spkChNumber;
+info.strbChNumber    = strbChNumber;
+info.opts            = opts;
+info.datestr         = datestr(now, 'yyyymmddTHHMM');
+
+% save out mat file:
+disp('Saving mat file with timestamps & info')
+save(tsPath, 'tsMap', 'evTs', 'evSv', 'info', '-v7.3');
+
+disp('CONVERSION COMPLETE!')
 
 %% TEST ZONE
 % clear t
