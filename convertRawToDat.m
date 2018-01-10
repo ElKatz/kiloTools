@@ -1,19 +1,19 @@
-function [samples, datPath] = convertPlxToDat(dataFullPath, opts)
-%   [samples, datPath] = convertPlxToDat(dataFullPath, opts)
+function [samples, datPath] = convertRawToDat(rawFullPath, opts)
+%   [samples, datPath] = convertRawToDat(rawFullPath, opts)
 %
-% Converts continuous data from plx file to matrix 'samples' of size:
-% [nSamples, nChannels] and saves as binary .dat file in same folder as plx
-% file (unless specified otherwise in opts)
+% Converts continuous data from raw ephys file to matrix 'samples' of size:
+% [nSamples, nChannels] and saves as binary .dat file in same folder as
+% ephys file (unless specified otherwise in opts)
 % INPUT:
-%   dataFullPath - full path to ephys data file. This file can be 'plx', 
-%                  'mpx', 'oe', whatever, as long as it contains the 
-%                  continuous voltage traces.
+%   ephysFullPath - Optional. full path to raw ephys data file. 
+%                   This file can be 'plx', 'mpx', 'oe', whatever, as long 
+%                   as it contains the continuous voltage traces.
 % 
 % !!!!! AT THE MOMENT, THIS FUNCTION ONLY DEALS WITH plx FILES !!!!!
 %
 %   opts - (optional) struct of options:
 %   .outputFolder - full path to folder to save dat file (default: same
-%                   folder as plx file)
+%                   folder as raw file)
 %
 % OUTPUT:
 %   samples - [nChannels, nSamples] consisting of all continuous data
@@ -33,21 +33,21 @@ addpath(genpath('~/Dropbox/Code/repos/pdstools/dependencies'));
 
 %% data file & folder names:
 
-dataFileType = 'plx';
+rawFileType = 'plx';
 
 if ~exist('fullPathPlx', 'var')
-    [dataFileName, dataFolder] = uigetfile(['*.' dataFileType], 'Select files for conversion', '~/Dropbox/Code/spike_sorting/');
+    [rawFileName, rawFolder] = uigetfile(['*.' rawFileType], 'Select files for conversion', '~/Dropbox/Code/spike_sorting/');
 else
-    [dataFolder, dataFileName, dataFileType]  = fileparts(dataFullPath);
-    dataFileName = [dataFileName dataFileType];
-    assert(strcmp(dataFileType, 'plx'), 'CAN ONLY DEAL WITH plx FILES. FOR NOW');
+    [rawFolder, rawFileName, rawFileType]  = fileparts(rawFullPath);
+    rawFileName = [rawFileName rawFileType];
+    assert(strcmp(rawFileType, 'plx'), 'CAN ONLY DEAL WITH plx FILES. FOR NOW');
 end
 
 % full path to plx file:
-dataFullPath = fullfile(dataFolder, dataFileName);
+rawFullPath = fullfile(rawFolder, rawFileName);
 
 % datasetname:
-dsn = dataFileName(1:end-4);
+dsn = rawFileName(1:end-4);
 
 %% optional arguements:
 % init:
@@ -59,7 +59,7 @@ end
 if exist('opts', 'var') &&  isfield(opts, 'outputFolder')
     outputFolder = opts.outputFolder;
 else
-    outputFolder = dataFolder;
+    outputFolder = rawFolder;
 end
 
 %% file names for .dat file (EPHYS) & .mat file (Timestamps and info):
@@ -89,7 +89,7 @@ fprintf('Performing conversion of %s\n', dsn)
 disp('--------------------------------------------------------------')
 
 % create a list of all ad continuous channel names in cell array:
-[nCh, adChName]     = plx_adchan_names(dataFullPath);
+[nCh, adChName]     = plx_adchan_names(rawFullPath);
 chNameList = cell(nCh,1);
 for ii = 1:nCh
     chNameList{ii} = adChName(ii,:);
@@ -110,7 +110,7 @@ end
 
 % get number of spikes counts per ad channel and get indices for those that
 % have data:
-[~, samplecounts] = plx_adchan_samplecounts(dataFullPath);
+[~, samplecounts] = plx_adchan_samplecounts(rawFullPath);
 idxDataCh = samplecounts~=0;
 
 % get indices for channels that are both spk channels & have data:
@@ -126,13 +126,13 @@ samples     = zeros(nChannels, nSamples, 'int16');
 tChRead     = nan(nChannels,1); % time keeping
 
 % gotta map out indices to plxeon's ad channel numbers:
-[~,   adChNumber]   = plx_ad_chanmap(dataFullPath);
+[~,   adChNumber]   = plx_ad_chanmap(rawFullPath);
 spkChNumber = adChNumber(idxGoodCh);
 
 disp(['Getting data from ' num2str(sum(idxGoodCh)) ' spike channels!'])
 for iCh = 1:nChannels
     tic
-    [~, n, ~, ~, ad] = plx_ad(dataFullPath, spkChNumber(iCh)); % returns signal in miliVolts
+    [~, n, ~, ~, ad] = plx_ad(rawFullPath, spkChNumber(iCh)); % returns signal in miliVolts
     if n>0
         tChRead(iCh) = toc;
         fprintf('Took me %0.3f secs to read channel #%0.0d \n', tChRead(iCh), spkChNumber(iCh));
@@ -185,10 +185,10 @@ strbChNumber = 257; % !!! this is true for rig A/B. verify this is true for your
 
 % add meta info:
 info.dsn             = dsn;
-info.dataFolder      = dataFolder;
-info.dataFile        = dataFile;
-info.dataFullPath    = dataFullPath;
-info.dataFileType    = dataFileType;
+info.rawFolder      = rawFolder;
+info.rawFile        = rawFileName;
+info.rawFullPath    = rawFullPath;
+info.rawFileType    = rawFileType;
 info.spkChNumber     = spkChNumber;
 info.strbChNumber    = strbChNumber;
 info.opts            = opts;
