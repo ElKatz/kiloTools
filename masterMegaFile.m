@@ -1,27 +1,39 @@
-%% MasterMegaFile
+function [] = masterMegaFile(datPath)
 % The kilosort repo comes with 3 files that need to be editted:
 %       masterFile.m, configFile.m, & createChanMap.m
-% I think that's unnecessarily messy so I've combined them all into this 
-% masterMegaFile.m, where manual input is reduced. 
+% 3 files are unnecessarily messy and I'm "1 file to rule them all" kinda 
+% guy so I've combined them all into this masterMegaFile.m. 
+%
+% !!! this m file should copied into each directory you wish to sort !!!
 %
 % Instructions:
-%   - define dataset directory ('dirDataset') 
-%   - define dataset name ('dsn')
-%   - set paths to necessary toolboxes
+%   - Either define your dat file folder and file within the function 
+%    ('datFolder' & 'datFile') or provide full path as input ('datPath'),
+%    see SELECT THY DATASET section.
+%   - verify paths to necessary toolboxes are correct
 %   - go over all parameteres below and make sure they are accurate.
 %     Especially in the chanMap section (e.g. fs, Nchannels etc...)
 
 
+%% SELECT THY DATASET:
+% you can either input the full path to your dat file (datPath) to the
+% function or hardcode it here
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+if exist('datPath', 'var')
+    [datFolder, datFile, ext] = fileparts(datPath);
+    assert(strcmp(ext, '.dat'), ['ERROR: must provide a .dat file. You provided: ' ext])
+else
+     [datFile, datFolder] = uigetfile('*.dat', 'Select dat file for kiloSorting', pwd);
+     datPath = fullfile(datFolder, datFile);
+     datFile = datFile(1:end-4);
+end
+assert(exist(datPath, 'file')~=0, 'ERROR: can''t find your dat file');
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 %% Define paths to your dataset:
 
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-dirDataset  = '~/Dropbox/_transfer_big_data/20170615/data/convertedToRaw/';
-dsn         = 'xxxxx'; % dataset name
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-% add paths:
 [~, hostName] = system('hostname');
 if contains(hostName, 'lsr-rjk-mata')
     addpath(genpath('C:\EPHYS\Code\Toolboxes\KiloSort-master')) % path to kilosort folder
@@ -32,7 +44,8 @@ elseif contains(hostName, 'LA-CPS828317MN-Huk-2.local')
 else
     error('Unrecognized hostname. Could not add necessary paths for sorting')
 end
-
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 %% 'createChanMap.m' section:
@@ -61,13 +74,13 @@ switch electrodeGeometry
 end
 
 % save:
-save(fullfile(dirDataset, 'chanMap.mat'), ...
+save(fullfile(datFolder, 'chanMap.mat'), ...
     'chanMap','connected', 'xcoords', 'ycoords', 'kcoords', 'chanMap0ind', 'fs')
 
 %% 'standardConfig.m' section:
 % this section is taken from the standardConfig.m file.
 
-ops.dirDatasets         = dirDataset;   % save into ops struct so it feeds the master.m file
+ops.dirDatasets         = datFolder;   % save into ops struct so it feeds the master.m file
 ops.performAutoMerge    = false;        % if true, will create a subdirectory and save the automerged data there
 
 ops.GPU                 = 1; % whether to run this code on an Nvidia GPU (much faster, mexGPUall first)		
@@ -76,9 +89,9 @@ ops.verbose             = 1; % whether to print command line progress
 ops.showfigures         = 1; % whether to plot figures during optimization		
 		
 ops.datatype            = 'dat';  % binary ('dat', 'bin') or 'openEphys'		
-ops.fbinary             = fullfile(dirDataset, [dsn '.' ops.datatype]); % will be created for 'openEphys'		
-ops.fproc               = fullfile(dirDataset, 'temp_wh.dat'); % residual from RAM of preprocessed data		
-ops.root                = dirDataset; % 'openEphys' only: where raw files are		
+ops.fbinary             = fullfile(datFolder, [datFile '.' ops.datatype]); % will be created for 'openEphys'		
+ops.fproc               = fullfile(datFolder, 'temp_wh.dat'); % residual from RAM of preprocessed data		
+ops.root                = datFolder; % 'openEphys' only: where raw files are		
 		
 % ops.fs                  = 22000;        % sampling rate		(omit if already in chanMap file)
 % ops.NchanTOT            = 24;           % total number of channels (omit if already in chanMap file)
@@ -93,7 +106,7 @@ ops.nSkipCov            = 1; % compute whitening matrix from every N-th batch (1
 ops.whiteningRange      = inf; % how many channels to whiten together (Inf for whole probe whitening, should be fine if Nchan<=32)		
 		
 % define the channel map as a filename (string) or simply an array		
-ops.chanMap             = fullfile(dirDataset, 'chanMap.mat'); % make this file using createChannelMapFile.m		
+ops.chanMap             = fullfile(datFolder, 'chanMap.mat'); % make this file using createChannelMapFile.m		
 ops.criterionNoiseChannels = 0.2; % fraction of "noise" templates allowed to span all channel groups (see createChannelMapFile for more info). 		
 % ops.chanMap = 1:ops.Nchan; % treated as linear probe if a chanMap file		
 		
@@ -156,14 +169,14 @@ rez                = fullMPMU(rez, DATA);% extract final spike times (overlappin
 
 % save sort results
 save(fullfile(ops.root,  'rez.mat'), 'rez', '-v7.3');
-rezToPhy(rez, autoMergeFolder);
+rezToPhy(rez, ops.root);
 
 % AutoMerge:
 % rez2Phy will use clusters from the new 5th column of st3 if you run this
 if isfield(ops, 'performAutoMerge') && ops.performAutoMerge
     rez = merge_posthoc2(rez);
     % save post autoMerge results in root folder:
-    autoMergeFolder = fullfile(dirDataset, 'autoMerged');
+    autoMergeFolder = fullfile(datFolder, 'autoMerged');
     mkdir(autoMergeFolder)
     save(fullfile(autoMergeFolder,  'rez.mat'), 'rez', '-v7.3');
     rezToPhy(rez, autoMergeFolder);
