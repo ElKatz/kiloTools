@@ -5,7 +5,7 @@ codes = stimcodes_FST;
 
 %% load Events from mat file
 disp('Loading event ts & sv');
-load(matFileName);
+load(matFileName, 'evTs', 'evSv');
 ts = evTs;
 sv = evSv;
 
