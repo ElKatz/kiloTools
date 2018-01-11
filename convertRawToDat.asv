@@ -29,10 +29,14 @@ function [samples, datPath] = convertRawToDat(rawFullPath, opts)
 
 %% paths:
 [~, hostname] = system('hostname');
-if strcmp(hostname, 'lsr-rjk-mata')
-elseif strcmp(hostname, 'lsr-rjk-mata')
-addpath(genpath('~/Dropbox/Code/spike_sorting/toolboxes/Matlab Offline Files SDK'));
-addpath(genpath('~/Dropbox/Code/repos/pdstools/dependencies'));
+switch lower(hostname)
+    case 'lsr-rjk-mata'
+        addpath(genpath('C:\EPHYS\Code\Toolboxes\Matlab Offline Files SDK'));
+    case 'LA-CPS828317MN-Huk-2.local'
+        addpath(genpath('~/Dropbox/Code/spike_sorting/toolboxes/Matlab Offline Files SDK'));
+    otherwise
+        error('Unrecognized hostname. Could not add necessary paths for sorting')
+end
 
 %% data file & folder names:
 

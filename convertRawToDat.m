@@ -28,25 +28,23 @@ function [samples, datPath] = convertRawToDat(rawFullPath, opts)
 
 
 %% paths:
-[~, hostname] = system('hostname');
-if strcmp(hostname, 'lsr-rjk-mata')
+[~, hostName] = system('hostname');
+if contains(hostName, 'lsr-rjk-mata')
     addpath(genpath('C:\EPHYS\Code\Toolboxes\Matlab Offline Files SDK'));
-elseif strcmp(hostname, 'LA-CPS828317MN-Huk-2.local')
+elseif contains(hostName, 'LA-CPS828317MN-Huk-2.local')
     addpath(genpath('~/Dropbox/Code/spike_sorting/toolboxes/Matlab Offline Files SDK'));
 else
-    error('could not resolve hostname. please add your hostname to this list')
+    error('Unrecognized hostname. Could not add necessary paths for sorting')
 end
 
 %% data file & folder names:
 
-rawFileType = 'plx';
-
-if ~exist('fullPathPlx', 'var')
+if ~exist('rawFullPath', 'var')
     [rawFileName, rawFolder] = uigetfile(['*.' rawFileType], 'Select files for conversion', '~/Dropbox/Code/spike_sorting/');
 else
     [rawFolder, rawFileName, rawFileType]  = fileparts(rawFullPath);
     rawFileName = [rawFileName rawFileType];
-    assert(strcmp(rawFileType, 'plx'), 'CAN ONLY DEAL WITH plx FILES. FOR NOW');
+    rawFileType = rawFileType(2:end);
 end
 
 % full path to plx file:
@@ -74,7 +72,7 @@ end
 datPath = fullfile(outputFolder, [dsn '.dat']);
 if exist(datPath, 'file')
     fprintf('Warning: file %s already exists\n', datPath)
-    ret = input('Overwrite? (y/n)');
+    ret = input('Overwrite? (''y''/''n'')');
     switch ret
         case 'y'
             delete(datPath)
@@ -149,7 +147,7 @@ switch rawFileType
             [~, n, ~, ~, ad] = plx_ad(rawFullPath, spkChNumber(iCh)); % returns signal in miliVolts
             if n>0
                 tChRead(iCh) = toc;
-                fprintf('Took me %0.3f secs to read channel #%0.0d \n', tChRead(iCh), spkChNumber(iCh));
+                fprintf('\tTook me %0.3f secs to read channel #%0.0d \n', tChRead(iCh), spkChNumber(iCh));
                 % data matrix 'samples':
                 samples(iCh,1:n) = int16(ad);
             else
@@ -174,7 +172,7 @@ switch rawFileType
         
         % get timestamps start values (tsStartVals) at start of each fragment:
         disp('Getting plexon timestamps for ad samples');
-        [adfreq, ~, ts, fn, ~] = plx_ad_gap(plxFile, spkChNumber(1));
+        [adfreq, ~, ts, fn] = plx_ad_gap_info(rawFullPath, spkChNumber(1));
         
         % loop over recording fragments
         tsMap = nan(sum(fn),1);
@@ -187,7 +185,7 @@ switch rawFileType
         
         disp('Getting plexon timestamps for strobed events');
         strbChNumber = 257; % !!! this is true for rig A/B. verify this is true for your rig too...
-        [~, evTs, evSv] = plx_event_ts(plxFile, strbChNumber);
+        [~, evTs, evSv] = plx_event_ts(rawFullPath, strbChNumber);
         
     case 'mpx'
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

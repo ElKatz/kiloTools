@@ -23,18 +23,17 @@ dsn         = 'xxxxx'; % dataset name
 
 % add paths:
 [~, hostName] = system('hostname');
-switch hostName
-    case 'la-cps828317mn-huk-2.local'
-        addpath(genpath('~/Dropbox/Code/spike_sorting/packages/KiloSort')) % path to kilosort folder
-        addpath(genpath('~/Dropbox/Code/spike_sorting/toolboxes/npy-matlab')) % path to npy-matlab scripts
-    case 'xxx'
-        addpath(genpath('~/Dropbox/Code/spike_sorting/packages/KiloSort')) % path to kilosort folder
-        addpath(genpath('~/Dropbox/Code/spike_sorting/toolboxes/npy-matlab')) % path to npy-matlab scripts
-    otherwise
-        error('Unrecognized hostname. Could not add necessary paths for sorting')
+if contains(hostName, 'lsr-rjk-mata')
+    addpath(genpath('C:\EPHYS\Code\Toolboxes\KiloSort-master')) % path to kilosort folder
+    addpath(genpath('C:\EPHYS\Code\Toolboxes\npy-matlab')) % path to npy-matlab scripts
+elseif contains(hostName, 'LA-CPS828317MN-Huk-2.local')
+    addpath(genpath('~/Dropbox/Code/spike_sorting/packages/KiloSort')) % path to kilosort folder
+    addpath(genpath('~/Dropbox/Code/spike_sorting/toolboxes/npy-matlab')) % path to npy-matlab scripts
+else
+    error('Unrecognized hostname. Could not add necessary paths for sorting')
 end
-        
-    
+
+
 
 %% 'createChanMap.m' section:
 % this section is take from the createChanMap.m file. 
