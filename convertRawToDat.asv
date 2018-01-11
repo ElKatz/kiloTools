@@ -30,12 +30,9 @@ function [samples, datPath] = convertRawToDat(rawFullPath, opts)
 %% paths:
 [~, hostname] = system('hostname');
 if strcmp(hostname, 'lsr-rjk-mata')
-    addpath(genpath('C:\EPHYS\Code\Toolboxes\Matlab Offline Files SDK'));
-elseif strcmp(hostname, 'LA-CPS828317MN-Huk-2.local')
-    addpath(genpath('~/Dropbox/Code/spike_sorting/toolboxes/Matlab Offline Files SDK'));
-else
-    error('could not resolve hostname. please add your hostname to this list')
-end
+elseif strcmp(hostname, 'lsr-rjk-mata')
+addpath(genpath('~/Dropbox/Code/spike_sorting/toolboxes/Matlab Offline Files SDK'));
+addpath(genpath('~/Dropbox/Code/repos/pdstools/dependencies'));
 
 %% data file & folder names:
 
