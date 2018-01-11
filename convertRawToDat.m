@@ -14,6 +14,8 @@ function [samples, datPath] = convertRawToDat(rawFullPath, opts)
 %   opts - (optional) struct of options:
 %   .outputFolder - full path to folder to save dat file (default: same
 %                   folder as raw file)
+%   .overWriteFiles - if TRUE then conversion will overwrite any existing
+%                   dat/mat files. Otherwise, will ask for user input.
 %
 % OUTPUT:
 %   samples - [nChannels, nSamples] consisting of all continuous data
@@ -28,19 +30,12 @@ function [samples, datPath] = convertRawToDat(rawFullPath, opts)
 
 
 %% paths:
-[~, hostName] = system('hostname');
-if contains(hostName, 'lsr-rjk-mata')
-    addpath(genpath('C:\EPHYS\Code\Toolboxes\Matlab Offline Files SDK'));
-elseif contains(hostName, 'LA-CPS828317MN-Huk-2.local')
-    addpath(genpath('~/Dropbox/Code/spike_sorting/toolboxes/Matlab Offline Files SDK'));
-else
-    error('Unrecognized hostname. Could not add necessary paths for sorting')
-end
+addPathsForSpikeSorting;
 
 %% data file & folder names:
 
 if ~exist('rawFullPath', 'var')
-    [rawFileName, rawFolder] = uigetfile(['*.' rawFileType], 'Select files for conversion', '~/Dropbox/Code/spike_sorting/');
+    [rawFileName, rawFolder] = uigetfile('*.*', 'Select files for conversion', '~/Dropbox/Code/spike_sorting/');
 else
     [rawFolder, rawFileName, rawFileType]  = fileparts(rawFullPath);
     rawFileName = [rawFileName rawFileType];
@@ -60,17 +55,24 @@ if ~exist('opts', 'var')
 end
 
 % output folder:
-if exist('opts', 'var') &&  isfield(opts, 'outputFolder')
+if isfield(opts, 'outputFolder')
     outputFolder = opts.outputFolder;
 else
     outputFolder = rawFolder;
+end
+
+% overwrite files (if they exist):
+if isfield(opts, 'overwriteFiles')
+    overwriteFiles = opts.overwriteFiles;
+else
+    overwriteFiles = true;
 end
 
 %% file names for .dat file (EPHYS) & .mat file (Timestamps and info):
 
 % EPHYS: dat file named after dsn:
 datPath = fullfile(outputFolder, [dsn '.dat']);
-if exist(datPath, 'file')
+if exist(datPath, 'file') && ~overwriteFiles
     fprintf('Warning: file %s already exists\n', datPath)
     ret = input('Overwrite? (''y''/''n'')');
     switch ret
