@@ -68,13 +68,6 @@ else
     overwriteFiles = true;
 end
 
-% remove artifacts
-if isfield(opts, 'removeArtifacts')
-    removeArtifacts = opts.removeArtifacts;
-else
-    removeArtifacts = true;
-end
-
 %% file names for .dat file (EPHYS) & .mat file (Timestamps and info):
 
 % EPHYS: dat file named after dsn:
@@ -166,14 +159,15 @@ switch rawFileType
         end
         
         %% remove artifacts:
-        
-        if removeArtifacts
+        keyboard
+        if opts.removeArtifacts
+            tic
             sdThresh = 10;
             sdMedAbs = std(median(abs(single(samples))));
             idxBad   = median(abs(single(samples)) > (sdThresh*sdMedAbs));
-            samples(:, idxBad) = [];            
-            fprintf('removed %0.0d of %0.0d samples, (%0.3f percent)\n', sum(idxBad), numel(idxBad), mean(idxBad)*1e2); 
-        end
+            toc
+            fprintf('removed %0.0d of %0.0d samples, (%1.2d percent)', sum(idxBad), numel(idxBad), mean(idxBad)*1e2); 
+
 
         %%  extract timing information from raw file in "real" time
         % we'll get:
@@ -202,11 +196,6 @@ switch rawFileType
             currSample = currSample + fn(ii);
         end
         
-        % remove artifacts samples from timing vector too:
-         if removeArtifacts
-             tsMap(idxBad) = [];
-         end
-         
         disp('Getting plexon timestamps for strobed events');
         strbChNumber = 257; % !!! this is true for rig A/B. verify this is true for your rig too...
         [~, evTs, evSv] = plx_event_ts(rawFullPath, strbChNumber);
