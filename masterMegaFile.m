@@ -62,7 +62,7 @@ end
 
 % save:
 save(fullfile(datFolder, 'chanMap.mat'), ...
-    'chanMap','connected', 'xcoords', 'ycoords', 'kcoords', 'chanMap0ind', 'fs')
+    'chanMap','connected', 'xcoords', 'ycoords', 'kcoords', 'chanMap0ind', 'fs', 'electrodeGeometry')
 
 %% 'standardConfig.m' section:
 % this section is taken from the standardConfig.m file.
@@ -139,7 +139,7 @@ ops.epu     = Inf;
 		
 ops.ForceMaxRAMforDat   = 32e9; % maximum RAM the algorithm will try to use; on Windows it will autodetect.
 
-save('ops.mat', 'ops')
+save(fullfile(ops.root,'ops.mat'), 'ops')
 
 
 %% sort that sweet sweet data:

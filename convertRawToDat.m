@@ -48,38 +48,35 @@ rawFullPath = fullfile(rawFolder, rawFileName);
 % datasetname:
 dsn = rawFileName(1:end-4);
 
-%% optional arguements:
+%% use optional arguements and/or set defaults:
 % init:
 if ~exist('opts', 'var')
     opts = struct;
 end
 
 % output folder:
-if isfield(opts, 'outputFolder')
-    outputFolder = opts.outputFolder;
-else
-    outputFolder = rawFolder;
+if ~isfield(opts, 'outputFolder')
+    opts.outputFolder = fullfile(rawFolder, 'kiloSorted');
+    if ~exist(opts.outputFolder, 'dir')
+        mkdir(opts.outputFolder);
+    end
 end
 
 % overwrite files (if they exist):
-if isfield(opts, 'overwriteFiles')
-    overwriteFiles = opts.overwriteFiles;
-else
-    overwriteFiles = true;
+if ~isfield(opts, 'overwriteFiles')
+    opts.overwriteFiles = true;
 end
 
 % remove artifacts
-if isfield(opts, 'removeArtifacts')
-    removeArtifacts = opts.removeArtifacts;
-else
-    removeArtifacts = true;
+if ~isfield(opts, 'removeArtifacts')
+    opts.removeArtifacts = true;
 end
 
 %% file names for .dat file (EPHYS) & .mat file (Timestamps and info):
 
 % EPHYS: dat file named after dsn:
-datPath = fullfile(outputFolder, [dsn '.dat']);
-if exist(datPath, 'file') && ~overwriteFiles
+datPath = fullfile(opts.outputFolder, [dsn '.dat']);
+if exist(datPath, 'file') && ~opts.overwriteFiles
     fprintf('Warning: file %s already exists\n', datPath)
     ret = input('Overwrite? (''y''/''n'')');
     switch ret
@@ -93,7 +90,7 @@ if exist(datPath, 'file') && ~overwriteFiles
 end
 
 % TIMESTAMPS & INFO: mat file named after dsn:
-tsPath = fullfile(outputFolder, [dsn '.mat']);
+tsPath = fullfile(opts.outputFolder, [dsn '.mat']);
 
 %% begin conversion:
 
@@ -167,7 +164,7 @@ switch rawFileType
         
         %% remove artifacts:
         
-        if removeArtifacts
+        if opts.removeArtifacts
             sdThresh = 10;
             sdMedAbs = std(median(abs(single(samples))));
             idxBad   = median(abs(single(samples)) > (sdThresh*sdMedAbs));
@@ -203,7 +200,7 @@ switch rawFileType
         end
         
         % remove artifacts samples from timing vector too:
-         if removeArtifacts
+         if opts.removeArtifacts
              tsMap(idxBad) = [];
          end
          
