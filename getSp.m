@@ -17,23 +17,23 @@ function sp = getSp(ksDir, varargin)
 
 
 %% info:
-% dat_path: your filename e.g. 'expt52.dat'
-% n_channels_dat: e.g. 24
-% dtype: e.g. 'int16'
-% offset: offset between recording start time and sort time.
-% sample_rate: sample rate of your DAQ system, e.g. 40000
-% hp_filtered: 0
-% dat_folder: folder for your filename e.g. '/Users/leorkatz/Dropbox/Code/spike_sorting/pilot_dat?'
-%%% the following are in size [nTotalSpikes x 1] i.e. for each spike
-% ss:  sample number at which there was a spike from any cluster 
-% st: [nTotalSpikes x 1] !!!! 2do !!! (* naming: st_s to indicate that it
-% is in seconds.
-% spikeTemplates: [nTotalSpikes x 1] the template number associated with
-% each spike.
-% clu: [nTotalSpikes x 1] the cluster number associated with
-% each spike.
-% tempScalingAmps: [nTotalSpikes x 1] the template scaling amplitude for
-% each spike
+
+%   dat_path:         your filename e.g. 'expt52.dat'
+%   n_channels_dat:   e.g. 24
+%   dtype:            e.g. 'int16'
+%   offset:           offset between recording start time and sort time.
+%   sample_rate:      sample rate of your DAQ system, e.g. 40000
+%   hp_filtered:      0
+%   dat_folder:       folder for your filename e.g. '/Users/leorkatz/Dropbox/Code/spike_sorting/pilot_dat?'
+%   ss:             sample number at which there was a spike from any cluster 
+%   st:             [nTotalSpikes x 1] !!!! 2do !!! (* naming: st_s to indicate that it
+%       is in seconds.
+%   spikeTemplates: [nTotalSpikes x 1] the template number associated with
+%       each spike.
+%   clu: [nTotalSpikes x 1] the cluster number associated with
+%       each spike.
+%   tempScalingAmps: [nTotalSpikes x 1] the template scaling amplitude for
+%   each spike
 %%% the following are in size [nClusters x 1] i.e. for each sorted cluster
 % cgs: [nClusters x 1] group number of each cluster e.g. [2 1 1 0 2] where 0=noise,
 % 1=multiunit, 2=good.

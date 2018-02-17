@@ -1,18 +1,22 @@
 function [] = masterMegaFile(datPath)
+%
 % The kilosort repo comes with 3 files that need to be editted:
 %       masterFile.m, configFile.m, & createChanMap.m
-% 3 files are unnecessarily messy and I'm "1 file to rule them all" kinda 
+% 3 files are unnecessarily messy and I'm a "1 file to rule them all" kinda 
 % guy so I've combined them all into this masterMegaFile.m. 
 %
 % !!! this m file should copied into each directory you wish to sort !!!
 %
+% INPUT:
+%   datPath - full path to your binary .dat file (the file that contains
+%             all voltage of size [nChannels, nSamples]
+%
 % Instructions:
-%   - Either define your dat file folder and file within the function 
-%    ('datFolder' & 'datFile') or provide full path as input ('datPath'),
-%    see SELECT THY DATASET section.
-%   - verify paths to necessary toolboxes are correct
+%   - verify paths to necessary toolboxes are correct.
 %   - go over all parameteres below and make sure they are accurate.
 %     Especially in the chanMap section (e.g. fs, Nchannels etc...)
+%   - Run the function. Either provide 'datPath' or don't (the function
+%     will open a dialogue box for you to choose the file)
 
 
 %% SELECT THY DATASET:
