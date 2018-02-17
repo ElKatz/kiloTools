@@ -48,31 +48,35 @@ rawFullPath = fullfile(rawFolder, rawFileName);
 % datasetname:
 dsn = rawFileName(1:end-4);
 
-%% optional arguements:
+%% use optional arguements and/or set defaults:
 % init:
 if ~exist('opts', 'var')
     opts = struct;
 end
 
 % output folder:
-if isfield(opts, 'outputFolder')
-    outputFolder = opts.outputFolder;
-else
-    outputFolder = rawFolder;
+if ~isfield(opts, 'outputFolder')
+    opts.outputFolder = fullfile(rawFolder, 'kiloSorted');
+    if ~exist(opts.outputFolder, 'dir')
+        mkdir(opts.outputFolder);
+    end
 end
 
 % overwrite files (if they exist):
-if isfield(opts, 'overwriteFiles')
-    overwriteFiles = opts.overwriteFiles;
-else
-    overwriteFiles = true;
+if ~isfield(opts, 'overwriteFiles')
+    opts.overwriteFiles = true;
+end
+
+% remove artifacts
+if ~isfield(opts, 'removeArtifacts')
+    opts.removeArtifacts = true;
 end
 
 %% file names for .dat file (EPHYS) & .mat file (Timestamps and info):
 
 % EPHYS: dat file named after dsn:
-datPath = fullfile(outputFolder, [dsn '.dat']);
-if exist(datPath, 'file') && ~overwriteFiles
+datPath = fullfile(opts.outputFolder, [dsn '.dat']);
+if exist(datPath, 'file') && ~opts.overwriteFiles
     fprintf('Warning: file %s already exists\n', datPath)
     ret = input('Overwrite? (''y''/''n'')');
     switch ret
@@ -86,7 +90,7 @@ if exist(datPath, 'file') && ~overwriteFiles
 end
 
 % TIMESTAMPS & INFO: mat file named after dsn:
-tsPath = fullfile(outputFolder, [dsn '.mat']);
+tsPath = fullfile(opts.outputFolder, [dsn '.mat']);
 
 %% begin conversion:
 
@@ -158,6 +162,16 @@ switch rawFileType
             end
         end
         
+        %% remove artifacts:
+        
+        if opts.removeArtifacts
+            sdThresh = 10;
+            sdMedAbs = std(median(abs(single(samples))));
+            idxBad   = median(abs(single(samples)) > (sdThresh*sdMedAbs));
+            samples(:, idxBad) = [];            
+            fprintf('removed %0.0d of %0.0d samples, (%0.3f percent)\n', sum(idxBad), numel(idxBad), mean(idxBad)*1e2); 
+        end
+
         %%  extract timing information from raw file in "real" time
         % we'll get:
         %   tsMap - time vector
@@ -185,6 +199,11 @@ switch rawFileType
             currSample = currSample + fn(ii);
         end
         
+        % remove artifacts samples from timing vector too:
+         if opts.removeArtifacts
+             tsMap(idxBad) = [];
+         end
+         
         disp('Getting plexon timestamps for strobed events');
         strbChNumber = 257; % !!! this is true for rig A/B. verify this is true for your rig too...
         [~, evTs, evSv] = plx_event_ts(rawFullPath, strbChNumber);
