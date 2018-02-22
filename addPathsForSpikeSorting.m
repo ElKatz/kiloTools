@@ -28,7 +28,7 @@ if contains(hostName, 'lsr-rjk-mata', 'IgnoreCase', 1)
     
 elseif contains(hostName, 'LA-CPS828317MN-Huk-2.local', 'IgnoreCase', 1)
     % Leor MacBookPro
-    paths.kiloTools = '~/Dropbox/Code/spike_sorting/packages/kiloTools';
+    paths.kiloTools = '~/Dropbox/Code/spike_sorting/toolboxes/kiloTools';
     paths.kiloSort  = '~/Dropbox/Code/spike_sorting/packages/KiloSort';
     paths.npymatlab = '~/Dropbox/Code/spike_sorting/toolboxes/npy-matlab';
     
