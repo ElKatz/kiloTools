@@ -25,19 +25,25 @@ if contains(hostName, 'lsr-rjk-mata', 'IgnoreCase', 1)
     paths.kiloTools = 'C:\EPHYS\Code\Toolboxes\kiloTools';
     paths.kiloSort  = 'C:\EPHYS\Code\Toolboxes\KiloSort-master';
     paths.npymatlab = 'C:\EPHYS\Code\Toolboxes\npy-matlab';
+%     paths.plexonSdk = '~/Dropbox/Code/Tools/Plexon Offline SDKs/Matlab Offline Files SDK';
     
 elseif contains(hostName, 'LA-CPS828317MN-Huk-2.local', 'IgnoreCase', 1)
     % Leor MacBookPro
     paths.kiloTools = '~/Dropbox/Code/spike_sorting/toolboxes/kiloTools';
     paths.kiloSort  = '~/Dropbox/Code/spike_sorting/packages/KiloSort';
     paths.npymatlab = '~/Dropbox/Code/spike_sorting/toolboxes/npy-matlab';
+    paths.plexonSdk = '~/Dropbox/Code/Tools/Plexon Offline SDKs/Matlab Offline Files SDK';
     
 else
     error('Unrecognized hostname. Could not add necessary paths for sorting')
 end
 
 %% add paths
-addpath(genpath(paths.kiloTools))
-addpath(genpath(paths.kiloSort))
-addpath(genpath(paths.npymatlab))
-disp('Paths for spikesorting-- added!')
+flds = fieldnames(paths);
+for iF = 1:numel(flds)
+    addpath(genpath(paths.(flds{iF})));
+    disp(['added - ' flds{iF}]);
+end
+
+
+
