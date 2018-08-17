@@ -1,22 +1,19 @@
-function [] = masterMegaFile(datPath)
-%
+function [] = masterMegaFile(datPath, fs, nCh, probeGeometry)
 % The kilosort repo comes with 3 files that need to be editted:
 %       masterFile.m, configFile.m, & createChanMap.m
-% 3 files are unnecessarily messy and I'm a "1 file to rule them all" kinda 
+% 3 files are unnecessarily messy and I'm "1 file to rule them all" kinda 
 % guy so I've combined them all into this masterMegaFile.m. 
 %
 % !!! this m file should copied into each directory you wish to sort !!!
 %
-% INPUT:
-%   datPath - full path to your binary .dat file (the file that contains
-%             all voltage of size [nChannels, nSamples]
-%
 % Instructions:
-%   - verify paths to necessary toolboxes are correct.
+%   - Either define your dat file folder and file within the function 
+%    ('datFolder' & 'datFile') or provide full path as input ('datPath'),
+%    see SELECT THY DATASET section.
+%   - verify paths to necessary toolboxes are correct
 %   - go over all parameteres below and make sure they are accurate.
-%     Especially in the chanMap section (e.g. fs, Nchannels etc...)
-%   - Run the function. Either provide 'datPath' or don't (the function
-%     will open a dialogue box for you to choose the file)
+%     Especially in the chanMap section (e.g. fs, nChannels etc...)
+
 
 
 %% SELECT THY DATASET:
@@ -40,28 +37,36 @@ assert(exist(datPath, 'file')~=0, 'ERROR: can''t find your dat file');
 addPathsForSpikeSorting;
 
 %% 'createChanMap.m' section:
-% this section is take from the createChanMap.m file. 
 
-fs          = 40000; % sampling frequency
-Nchannels   = 24;
-connected   = true(Nchannels, 1);
-chanMap     = 1:Nchannels;
-chanMap0ind = chanMap - 1;
+connected       = true(nCh, 1);
+chanMap         = 1:nCh;
+chanMap0ind     = chanMap - 1;
 
-electrodeGeometry = 'linear'; % linear/ stereo / whatever...
-
-switch electrodeGeometry
-    case 'linear'
+switch probeGeometry
+    case 'linear50'
         % linear geometry:
-        xcoords = ones(Nchannels,1);
-        ycoords = (1:Nchannels)';
-        kcoords = ones(Nchannels,1);
+        ySpacing = 50;
+        xcoords = zeros(nCh,1);
+        ycoords = (((nCh-1) * ySpacing):-ySpacing:0)';
+        kcoords = ones(nCh,1);
+    case 'linear125'
+        % linear geometry:
+        ySpacing = 125;
+        xcoords = zeros(nCh,1);
+        ycoords = (((nCh-1) * ySpacing):-ySpacing:0)';
+        kcoords = ones(nCh,1);
+    case 'linear200'
+        % linear geometry:
+        ySpacing = 200;
+        xcoords = zeros(nCh,1);
+        ycoords = (((nCh-1) * ySpacing):-ySpacing:0)';
+        kcoords = ones(nCh,1);
     case 'stereo'
         % sterotrode geometry
-        xSpacing = 200; % phy visualization is weird with x axis so I'm giving it 200 (despite real value being 50).
+        xSpacing = 50; 
         ySpacing = 50;
-        xcoords = xSpacing * repmat([0 1]', Nchannels/2,1);
-        ycoords = ySpacing * kron(((Nchannels/2):-1:1)-1, [1 1])'; % using kron for stereo geometry
+        xcoords = xSpacing * repmat([0 1]', nCh/2,1);
+        ycoords = ySpacing * kron(((nCh/2):-1:1)-1, [1 1])'; % using kron for stereo geometry
 end
 
 % save:
