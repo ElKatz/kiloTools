@@ -17,10 +17,12 @@ performConversoin   = true;
 performKiloSort     = true;
 %% list of paths to raw ephys files
 
-% 'Z:\LAB PROJECTS\fstAttention\data\fst\s20170711a-non-non\20170711_1_2700sec_onwards_where_stimuli_are_in_correct_location.plx',...
-% 'Z:\LAB PROJECTS\fstAttention\data\fst\s20171030a-non-non\20171030_t1351.plx',...
+fs              = 40000;
+nCh             = 31;
+probeGeometry   = 'linear200';
+
+
 rawPathList = {...
-    
 %     'D:\Data\katz\GPe_recording\20180808_pilot_vProbe_with_PLDAPS_vK2\20180808_pilot_vProbe_with_PLDAPS_vK2.pl2',...
 %     'D:\Data\katz\GPe_recording\20180808_pilot_vProbe_with_PLDAPS_vK2_withStartAndStop\20180808_pilot_vProbe_with_PLDAPS_vK2_withStartAndStop.pl2',...
         'D:\Data\katz\GPe_recording\20180814a\20180814_t1407.pl2', ...
@@ -29,9 +31,7 @@ rawPathList = {...
 
 nFiles = numel(rawPathList);
 
-fs              = 40000;
-nCh             = 31;
-probeGeometry   = 'linear200';
+
 
 %% Make list of dat files by adding .dat and inserting 'kiloSorted' folder:
 datPathList     = cell(nFiles,1);
@@ -53,8 +53,8 @@ for iF = 1:nFiles
     % convert:
     if performConversoin
         if exist(rawPathList{iF}, 'file')
-%             convertRawToDat(rawPathList{iF});
-            [samples] = convertRawToDat_beforeChange(rawPathList{iF});
+            convertRawToDat(rawPathList{iF});
+%             [samples] = convertRawToDat_beforeChange(rawPathList{iF});
         else
             warning(['Conversion fail. Could not find raw ephys file: ' rawPathList{iF}])
             continue;

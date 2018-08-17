@@ -165,20 +165,52 @@ switch rawFileType
         
         % get timestamps start values (tsStartVals) at start of each fragment:
         disp('Getting plexon timestamps for ad samples');
-        [adfreq, ~, ts, fn] = plx_ad_gap_info(rawFullPath, spkChNumber(1));
         
-        % loop over recording fragments
-        tsMap = nan(sum(fn),1);
-        currSample = 1;
-        for ii = 1:length(fn)
-            timeStamps = (0:(fn(ii)-1)) / adfreq;
-            tsMap(currSample:(currSample - 1 + fn(ii))) = timeStamps + ts(ii);
-            currSample = currSample + fn(ii);
+        
+        % read the strobed word info (values & time stamps).
+        out.eventInfo = PL2EventTs(rawFullPath, 'Strobed');
+        out.RSTARTInfo = PL2EventTs(rawFullPath, 'RSTART');
+        out.RSTOPInfo = PL2EventTs(rawFullPath, 'RSTOP');
+
+        % must read in a spike channel to construct the "timestamp map" from
+        % samples (kilosort) to time in seconds.
+        ad = PL2Ad(rawFullPath, 'SPKC01');
+
+        % place to store the "map" from samples to seconds.
+        sampsToSecsMap = zeros(sum(ad.FragCounts),1);
+
+        % sample duration
+        sampDur = 1/ad.ADFreq;
+
+        % how many fragments of recording?
+        nFrags = length(ad.FragTs);
+        currentSample = 1;
+        for i = 1:nFrags
+            chunkIndex = currentSample:(currentSample + ad.FragCounts(i) - 1);
+            timeStamps = ad.FragTs(i) + (0:(ad.FragCounts(i)-1))*sampDur;
+            sampsToSecsMap(chunkIndex) = timeStamps;
+            currentSample = chunkIndex(end)+1;
         end
-         
-        disp('Getting plexon timestamps for strobed events');
-        strbChNumber = 257; % !!! this is true for rig A/B. verify this is true for your rig too...
-        [~, evTs, evSv] = plx_event_ts(rawFullPath, strbChNumber);
+
+        % map samples to timeStamps
+        out.spikeTimesSecs = sampsToSecsMap(out.spikeTimesSamps);
+
+% % 
+% %  I like JPHs versoin better. this is my old version:
+% %         [adfreq, ~, ts, fn] = plx_ad_gap_info(rawFullPath, spkChNumber(1));
+% %         
+% %         % loop over recording fragments
+% %         tsMap = nan(sum(fn),1);
+% %         currSample = 1;
+% %         for ii = 1:length(fn)
+% %             timeStamps = (0:(fn(ii)-1)) / adfreq;
+% %             tsMap(currSample:(currSample - 1 + fn(ii))) = timeStamps + ts(ii);
+% %             currSample = currSample + fn(ii);
+% %         end
+% %          
+% %         disp('Getting plexon timestamps for strobed events');
+% %         strbChNumber = 257; % !!! this is true for rig A/B. verify this is true for your rig too...
+% %         [~, evTs, evSv] = plx_event_ts(rawFullPath, strbChNumber);
         
   
     otherwise
@@ -209,7 +241,8 @@ if opts.removeArtifacts
     % remove the "bad" samples from 'samples' matrix:
     samples(:, idxBad)  = [];
     % remove the "bad" samples from timing vector too:
-    tsMap(idxBad)       = [];
+%     tsMap(idxBad)       = [];
+    out.spikeTimesSecs(idxBad) = []; 
          
     fprintf('removed %0.0d of %0.0d samples, (%0.3f percent)\n', sum(idxBad), numel(idxBad), mean(idxBad)*1e2);
 end
@@ -219,19 +252,19 @@ end
 %% Pack up and save:
 
 % meta info:
-info.dsn            = dsn;
-info.rawFolder      = rawFolder;
-info.rawFile        = rawFileName;
-info.rawFullPath    = rawFullPath;
-info.rawFileType    = rawFileType;
-info.spkChNumber    = spkChNumber;
-info.strbChNumber   = strbChNumber;
-info.opts           = opts;
-info.datestr        = datestr(now, 'yyyymmddTHHMM');
+out.info.dsn            = dsn;
+out.info.rawFolder      = rawFolder;
+out.info.rawFile        = rawFileName;
+out.info.rawFullPath    = rawFullPath;
+out.info.rawFileType    = rawFileType;
+out.info.spkChNumber    = spkChNumber;
+out.info.strbChNumber   = strbChNumber;
+out.info.opts           = opts;
+out.info.datestr        = datestr(now, 'yyyymmddTHHMM');
 
 % timing data to mat file:
 disp('Saving mat file with timestamps & info')
-save(tsPath, 'tsMap', 'evTs', 'evSv', 'info', '-v7.3');
+save(tsPath, '-struct', 'out');
 
 % ephys data to dat file:
 fidout = fopen(datPath, 'a'); % opening file for appending

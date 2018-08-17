@@ -165,6 +165,38 @@ switch rawFileType
         
         % get timestamps start values (tsStartVals) at start of each fragment:
         disp('Getting plexon timestamps for ad samples');
+        
+        
+        % read the strobed word info (values & time stamps).
+        out.eventInfo = PL2EventTs(out.PL2fileName, 'Strobed');
+        out.RSTARTInfo = PL2EventTs(out.PL2fileName, 'RSTART');
+        out.RSTOPInfo = PL2EventTs(out.PL2fileName, 'RSTOP');
+
+        % must read in a spike channel to construct the "timestamp map" from
+        % samples (kilosort) to time in seconds.
+        ad = PL2Ad(out.PL2fileName, 'SPKC01');
+
+        % place to store the "map" from samples to seconds.
+        sampsToSecsMap = zeros(sum(ad.FragCounts),1);
+
+        % sample duration
+        sampDur = 1/ad.ADFreq;
+
+        % how many fragments of recording?
+        nFrags = length(ad.FragTs);
+        currentSample = 1;
+        for i = 1:nFrags
+            chunkIndex = currentSample:(currentSample + ad.FragCounts(i) - 1);
+            timeStamps = ad.FragTs(i) + (0:(ad.FragCounts(i)-1))*sampDur;
+            sampsToSecsMap(chunkIndex) = timeStamps;
+            currentSample = chunkIndex(end)+1;
+        end
+
+        % map samples to timeStamps
+        out.spikeTimesSecs = sampsToSecsMap(out.spikeTimesSamps);
+
+
+
         [adfreq, ~, ts, fn] = plx_ad_gap_info(rawFullPath, spkChNumber(1));
         
         % loop over recording fragments
