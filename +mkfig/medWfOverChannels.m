@@ -10,17 +10,20 @@ function hF = medWfOverChannels(sp)
 hFig = figure;
 figSz = [sp.nClusters, 4];
 
-yScaler = .003;
+yScaler = .1;
 x  = 1:size(sp.medWfs, 3);
+
+nX = numel(unique(sp.xcoords));
+nY = numel(unique(sp.ycoords));
 
 for iClu = 1:sp.nClusters
     subplot(1, sp.nClusters, iClu)
     hold on
-    for iCh = 1:sp.nChannels
+    for iCh = 1:nY
 %         plot(((iCh-1)*yBuffer) + squeeze(sp.medWFs(iClu, iCh,:))');
-        plot(x + sp.xcoords(iCh), sp.ycoords(iCh) + yScaler * squeeze(sp.medWfs(iClu, iCh,:))');
+        plot(x + sp.xcoords(iCh) - 0.5*length(x), sp.ycoords(iCh) + yScaler * squeeze(sp.medWfs(iClu, iCh,:))');
     end
-    xlim([-50 350])
+    xlim([min(sp.xcoords)-100 max(sp.xcoords)+100])
     ylim([min(sp.ycoords) - 100, max(sp.ycoords) + 100])
     set(gca, 'XTick',[], 'YTick',[])
     if iClu==1
@@ -32,4 +35,3 @@ for iClu = 1:sp.nClusters
 end
 
 formatFig(hFig, figSz);
-saveas(hFig, 'testFig.pdf')

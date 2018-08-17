@@ -20,12 +20,11 @@ function [paths] = addPathsForSpikeSorting
 [~, hostName] = system('hostname');
 
 % addpaths
-if contains(hostName, 'lsr-rjk-mata', 'IgnoreCase', 1)
+if contains(hostName, 'DESKTOP-KEJGC64', 'IgnoreCase', 1)
     % Dell spike sorter in Leor office
-    paths.kiloTools = 'C:\EPHYS\Code\Toolboxes\kiloTools';
-    paths.kiloSort  = 'C:\EPHYS\Code\Toolboxes\KiloSort-master';
-    paths.npymatlab = 'C:\EPHYS\Code\Toolboxes\npy-matlab';
-%     paths.plexonSdk = '~/Dropbox/Code/Tools/Plexon Offline SDKs/Matlab Offline Files SDK';
+    paths.kiloTools = 'D:\Code\Toolboxes\kiloTools';
+    paths.kiloSort  = 'D:\Code\Toolboxes\KiloSort-master';
+    paths.npymatlab = 'D:\Code\Toolboxes\npy-matlab';
     
 elseif contains(hostName, 'LA-CPS828317MN-Huk-2.local', 'IgnoreCase', 1)
     % Leor MacBookPro

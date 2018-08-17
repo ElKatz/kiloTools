@@ -80,9 +80,6 @@ if exist(datPath, 'file')
     delete(datPath)
 end
 
-% TIMESTAMPS & INFO: mat filename:
-tsPath = fullfile(opts.outputFolder, 'timestampsAndInfo.mat');
-
 %% begin conversion:
 
 disp('--------------------------------------------------------------')
@@ -166,12 +163,6 @@ switch rawFileType
         % get timestamps start values (tsStartVals) at start of each fragment:
         disp('Getting plexon timestamps for ad samples');
         
-        
-        % read the strobed word info (values & time stamps).
-        out.eventInfo = PL2EventTs(rawFullPath, 'Strobed');
-        out.RSTARTInfo = PL2EventTs(rawFullPath, 'RSTART');
-        out.RSTOPInfo = PL2EventTs(rawFullPath, 'RSTOP');
-
         % must read in a spike channel to construct the "timestamp map" from
         % samples (kilosort) to time in seconds.
         ad = PL2Ad(rawFullPath, 'SPKC01');
@@ -192,8 +183,17 @@ switch rawFileType
             currentSample = chunkIndex(end)+1;
         end
 
-        % map samples to timeStamps
-        out.spikeTimesSecs = sampsToSecsMap(out.spikeTimesSamps);
+        
+          
+        % read the strobed word info (values & time stamps).
+        strobedEvents.eventInfo = PL2EventTs(rawFullPath, 'Strobed');
+        strobedEvents.RSTARTInfo = PL2EventTs(rawFullPath, 'RSTART');
+        strobedEvents.RSTOPInfo = PL2EventTs(rawFullPath, 'RSTOP');
+
+
+        
+%         % map samples to timeStamps
+%         out.spikeTimesSecs = sampsToSecsMap(out.spikeTimesSamps);
 
 % % 
 % %  I like JPHs versoin better. this is my old version:
@@ -252,19 +252,30 @@ end
 %% Pack up and save:
 
 % meta info:
-out.info.dsn            = dsn;
-out.info.rawFolder      = rawFolder;
-out.info.rawFile        = rawFileName;
-out.info.rawFullPath    = rawFullPath;
-out.info.rawFileType    = rawFileType;
-out.info.spkChNumber    = spkChNumber;
-out.info.strbChNumber   = strbChNumber;
-out.info.opts           = opts;
-out.info.datestr        = datestr(now, 'yyyymmddTHHMM');
+info.dsn            = dsn;
+info.rawFolder      = rawFolder;
+info.rawFile        = rawFileName;
+info.rawFullPath    = rawFullPath;
+info.rawFileType    = rawFileType;
+info.spkChNumber    = spkChNumber;
+% info.strbChNumber   = strbChNumber;
+info.opts           = opts;
+info.datestr        = datestr(now, 'yyyymmddTHHMM');
 
-% timing data to mat file:
-disp('Saving mat file with timestamps & info')
-save(tsPath, '-struct', 'out');
+% save strobedEvents:
+save(fullfile(opts.outputFolder, 'strobedEvents.mat'),  'strobedEvents');
+
+% save info:
+save(fullfile(opts.outputFolder, 'convertInfo.mat'),  'info');
+
+
+% % timing data to mat file:
+% disp('Saving mat file with timestamps & info')
+% save(tsPath, 'sampsToSecsMap', 'info');
+
+% save sampsToSecsMap:
+save(fullfile(opts.outputFolder, 'sampsToSecsMap.mat'),  'sampsToSecsMap')
+
 
 % ephys data to dat file:
 fidout = fopen(datPath, 'a'); % opening file for appending

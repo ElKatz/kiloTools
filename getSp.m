@@ -65,11 +65,13 @@ p.addOptional('loadPCs', false);
 p.addOptional('waveWinT', [-300 900]);
 p.addOptional('medWave', true)
 p.addOptional('visualize', false)
+p.addOptional('save', true)
 p.parse(varargin{:});
 
 %% Store the info:
 
-info = struct;
+% load thee info struct
+load(fullfile(ksDir, 'convertInfo.mat'));
 info.ksDir          = ksDir;
 info.depth          = [];
 info.dTip2lowestCh  = [];
@@ -78,11 +80,14 @@ info.b              = [];
 
 %% LOAD UP DATA FROM npy & csv FILES:
 
+% load the sampsToSecMap:
+load(fullfile(ksDir, 'sampsToSecsMap.mat'));
+
 % load spike data from npy:
 sp              = loadParamsPy(fullfile(ksDir, 'params.py'));
 sp.info         = info;
 spikeTimesSamps = readNPY(fullfile(ksDir, 'spike_times.npy'));
-
+spikeTimesSecs  = sampsToSecsMap(spikeTimesSamps);
 
 %% convert samples tp seconds:
 % (AKA convert spikeTimesSamps to spikeTimeSecs):
@@ -260,6 +265,13 @@ if p.Results.medWave
         mkfig.medWfPerChannel(sp)
     end
 end
+
+%% save sp
+
+if p.Results.save
+    save(fullfile(ksDir, 'sp.mat'), '-struct', 'sp')
+end
+disp('Done saving ''sp''')
 
 disp('-------------------')
 disp('DONE! Enjoy your sp')

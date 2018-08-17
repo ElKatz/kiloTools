@@ -71,7 +71,7 @@ end
 
 % save:
 save(fullfile(datFolder, 'chanMap.mat'), ...
-    'chanMap','connected', 'xcoords', 'ycoords', 'kcoords', 'chanMap0ind', 'fs', 'electrodeGeometry')
+    'chanMap','connected', 'xcoords', 'ycoords', 'kcoords', 'chanMap0ind', 'fs', 'probeGeometry')
 
 %% 'standardConfig.m' section:
 % this section is taken from the standardConfig.m file.
