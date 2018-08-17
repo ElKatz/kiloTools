@@ -18,7 +18,7 @@ The toolbox takes you from raw ephys file (e.g. plx) to matlab-based sorted data
 
 **spike sorting** - `masterMegaFile` - includes the 3 core files from the kilosort repo (masterfile, config, chanMap). Runs kiloSort on GPU/CPU.
 
-**port to matlab** - `getSp` ports the kiloSorted data into matlab for manipulation. `sp2neuron` - converts the sp struct into a class fo size nNeurons
+**port to matlab** - `getSp` ports the kiloSorted data into matlab for manipulation. `sp2su` - converts the sp struct into a class fo size nNeurons
 
 ## Workflow
 
