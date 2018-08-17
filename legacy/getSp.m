@@ -49,7 +49,7 @@ function sp = getSp(ksDir, varargin)
 % pcFeatInd: [] !!!!! 2do 
 % wv: [nCh × nWaveformSamples × nTotalSpikes] full waveform within a window
 % (window size defined in 'getSp.m')
-% medWfs: [nClusters × nCh × nWaveformSamples] median waveform on channel
+% medWFs: [nClusters × nCh × nWaveformSamples] median waveform on channel
 % which had the largest waveform amplitude. 
 %     
 
@@ -67,64 +67,19 @@ p.addOptional('medWave', true)
 p.addOptional('visualize', false)
 p.parse(varargin{:});
 
-%% Store the info:
-
-info = struct;
-info.ksDir          = ksDir;
-info.depth          = [];
-info.dTip2lowestCh  = [];
-info.b              = [];
-info.b              = [];
 
 %% LOAD UP DATA FROM npy & csv FILES:
 
 % load spike data from npy:
 sp              = loadParamsPy(fullfile(ksDir, 'params.py'));
-sp.info         = info;
-spikeTimesSamps = readNPY(fullfile(ksDir, 'spike_times.npy'));
-
-
-%% convert samples tp seconds:
-% (AKA convert spikeTimesSamps to spikeTimeSecs):
-
-% 
-% % read the strobed word info (values & time stamps).
-% out.eventInfo = PL2EventTs(out.PL2fileName, 'Strobed');
-% out.RSTARTInfo = PL2EventTs(out.PL2fileName, 'RSTART');
-% out.RSTOPInfo = PL2EventTs(out.PL2fileName, 'RSTOP');
-% 
-% % must read in a spike channel to construct the "timestamp map" from
-% % samples (kilosort) to time in seconds.
-% ad = PL2Ad(out.PL2fileName, 'SPKC01');
-% 
-% % place to store the "map" from samples to seconds.
-% sampsToSecsMap = zeros(sum(ad.FragCounts),1);
-% 
-% % sample duration
-% sampDur = 1/ad.ADFreq;
-% 
-% % how many fragments of recording?
-% nFrags = length(ad.FragTs);
-% currentSample = 1;
-% for i = 1:nFrags
-%     chunkIndex = currentSample:(currentSample + ad.FragCounts(i) - 1);
-%     timeStamps = ad.FragTs(i) + (0:(ad.FragCounts(i)-1))*sampDur;
-%     sampsToSecsMap(chunkIndex) = timeStamps;
-%     currentSample = chunkIndex(end)+1;
-% end
-% 
-% % map samples to timeStamps
-% out.spikeTimesSecs = sampsToSecsMap(out.spikeTimesSamps);
-spikeTimesSecs = double(spikeTimesSamps)/sp.sample_rate;
-%%
-
-
-
+sp.dat_folder   = ksDir;
+ss              = readNPY(fullfile(ksDir, 'spike_times.npy'));
+st              = double(ss)/sp.sample_rate;
 spikeTemplates  = readNPY(fullfile(ksDir, 'spike_templates.npy')); % note: zero-indexed
 if exist(fullfile(ksDir, 'spike_clusters.npy'), 'file')
-    spikeClusters         = readNPY(fullfile(ksDir, 'spike_clusters.npy'));
+clu         = readNPY(fullfile(ksDir, 'spike_clusters.npy'));
 else
-    spikeClusters         = spikeTemplates;
+    clu         = spikeTemplates;
 end
 tempScalingAmps = readNPY(fullfile(ksDir, 'amplitudes.npy'));
 if p.Results.loadPCs
@@ -137,32 +92,32 @@ end
 
 % get the phy output data from csv:
 if exist(fullfile(ksDir, 'cluster_groups.csv'), 'file')
-    csvFile         = fullfile(ksDir, 'cluster_groups.csv');
-    [clusterId, clusterScore]  = readClusterGroupsCSV(csvFile);
+    cgsFile     = fullfile(ksDir, 'cluster_groups.csv');
+    [cids, cgs] = readClusterGroupsCSV(cgsFile);
 else
     error('why no csv file? you baaad')
 end
 
 % if you wish to exlcude noise or multiunit, this is where it happens:
-cIdExclude = [];
+cidsExclude = [];
 if p.Results.exNoise
-    cIdExclude = [cIdExclude, clusterId(clusterScore==0)];
+    cidsExclude = [cidsExclude, cids(cgs==0)];
 end
 if p.Results.exMu
-    cIdExclude = [cIdExclude, clusterId(clusterScore==1)];
+    cidsExclude = [cidsExclude, cids(cgs==1)];
 end
 
 % exclude'em:
-spikeTimesSamps = spikeTimesSamps(~ismember(spikeClusters, cIdExclude));
-spikeTimesSecs  = spikeTimesSecs(~ismember(spikeClusters, cIdExclude));
-spikeTemplates  = spikeTemplates(~ismember(spikeClusters, cIdExclude));
-tempScalingAmps = tempScalingAmps(~ismember(spikeClusters, cIdExclude));
-spikeClusters   = spikeClusters(~ismember(spikeClusters, cIdExclude));
-clusterScore    = clusterScore(~ismember(clusterId, cIdExclude));
-clusterId       = clusterId(~ismember(clusterId, cIdExclude));
+ss              = ss(~ismember(clu, cidsExclude));
+st              = st(~ismember(clu, cidsExclude));
+spikeTemplates  = spikeTemplates(~ismember(clu, cidsExclude));
+tempScalingAmps = tempScalingAmps(~ismember(clu, cidsExclude));
+clu             = clu(~ismember(clu, cidsExclude));
+cgs             = cgs(~ismember(cids, cidsExclude));
+cids            = cids(~ismember(cids, cidsExclude));
 
 if p.Results.loadPCs
-    pcFeat = pcFeat(~ismember(spikeClusters, cIdExclude), :,:);
+    pcFeat = pcFeat(~ismember(clu, cidsExclude), :,:);
     %pcFeatInd = pcFeatInd(~ismember(cids, cidsExclude),:);
 end
 
@@ -175,33 +130,27 @@ temps   = readNPY(fullfile(ksDir, 'templates.npy'));
 winv    = readNPY(fullfile(ksDir, 'whitening_mat_inv.npy'));
 
 % and pack it up:
-sp.spikeTimesSamps  = spikeTimesSamps;
-sp.spikeTimesSecs   = spikeTimesSecs;
+sp.ss               = ss;
+sp.st               = st;
 sp.spikeTemplates   = spikeTemplates;
-sp.spikeClusters    = spikeClusters;
+sp.clu              = clu;
 sp.tempScalingAmps  = tempScalingAmps;
-sp.clusterScore     = clusterScore;
-sp.clusterId        = clusterId;
-sp.nClusters        = numel(sp.clusterId);
-sp.nChannels        = numel(xcoords);
+sp.cgs              = cgs;
+sp.cids             = cids;
+sp.nClu             = numel(sp.cids);
+sp.nCh              = numel(xcoords);
 sp.xcoords          = xcoords;
 sp.ycoords          = ycoords;
 sp.temps            = temps;
 sp.winv             = winv;
 sp.pcFeat           = pcFeat;
 sp.pcFeatInd        = pcFeatInd;
-sp.wf               = [];
-
-% oh, and alos get sort quality meausres:
-disp('Computing sort quality measures...')
-[~, sp.uQ, sp.cR, sp.isiV] = sqKilosort.computeAllMeasures(ksDir);
-sp.cR(isnan(sp.cR))=0;
-    
+sp.wv               = [];
 
 %% waves:
 % if you wish to get waveforms (time consuming), this is where it happens:
 if p.Results.waves
-    disp('Retreiving all (yes all) waveforms. This might take a while...')
+    
     % load in raw data
     load(fullfile(ksDir, 'ops.mat'));
     fid     = fopen(ops.fbinary, 'r');
@@ -220,50 +169,35 @@ if p.Results.waves
     % spike_times.npy is actually spike sample (ss) of every spike. (to
     % convert to time simply divide by Fs)
     %     ss      = readNPY(fullfile(ksDir,  'spike_times.npy'));
-    spikeTimesSamps      = double(sp.spikeTimesSamps);
+    ss      = double(sp.ss);
     %
     % get raw data around spiketimes (in samples) and populate 'wv' of size
     % [nCh, nWaveSamples, nSpikes]
-    wf = zeros(nCh, numel(win), numel(spikeTimesSamps), 'int16');
+    wv = zeros(nCh, numel(win), numel(ss), 'int16');
     % for each spikes:
-    for ii = 1:length(spikeTimesSamps)
-        spkwin = spikeTimesSamps(ii) + win;
-        wf(:,:,ii) = dat(:,spkwin);
+    for ii = 1:length(ss)
+        spkwin = ss(ii) + win;
+        wv(:,:,ii) = dat(:,spkwin);
     end
-    sp.wv = wf;
+    sp.wv = wv;
 end
 
 %% median waveform
 % kinda just hacking this section together so probably not the most
 % efficient or clean...
 if p.Results.medWave
-    disp('Retreiving median waveforms...')
     load(fullfile(ksDir, 'ops.mat'));
     d = dir(ops.fbinary);
     nSamp = d.bytes/2/sp.n_channels_dat;
     dataSize = [sp.n_channels_dat nSamp];
     chanMap = readNPY(fullfile(ksDir, 'channel_map.npy'));
     gain = 0.6/512/500*1e6; % raw file units to uV ***SHOULD BE RIG SPECIFIC. NEED TO DO THIS...
-    
-    % median wf per cluster per channel, size: [nClu, nCh, nSamps]
-    sp.medWfs = extractMedianWFs(sp.spikeClusters, sp.spikeTimesSecs, sp.sample_rate, fullfile(ksDir, sp.dat_path), sp.dtype, dataSize, chanMap, gain);
-    
-    % median wf per cluster on peak amplitude channel, size: [nClu, nSamps]
-    for iS = 1:sp.nClusters 
-        medWfPerCh              = squeeze(sp.medWfs(iS,:,:))';
-        medWfAmpPerCh           = max(medWfPerCh) - min(medWfPerCh);
-        sp.medWfPeakCh(iS)      = find(medWfAmpPerCh == max(medWfAmpPerCh), 1);
-        sp.medWfOnPeakCh(iS,:)  = medWfPerCh(:, sp.medWfPeakCh(iS));
-    end
-    
+    sp.medWFs = extractMedianWFs(sp.clu, sp.st, sp.sample_rate, fullfile(ksDir,sp.dat_path), sp.dtype, dataSize, chanMap, gain);
     if p.Results.visualize
-        mkfig.medWfPerChannel(sp)
+        mkfig_medWF(sp)
     end
 end
 
-disp('-------------------')
-disp('DONE! Enjoy your sp')
-disp('-------------------')
 
 
 
