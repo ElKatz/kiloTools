@@ -273,8 +273,8 @@ save(fullfile(opts.outputFolder, 'convertInfo.mat'),  'info');
 % disp('Saving mat file with timestamps & info')
 % save(tsPath, 'sampsToSecsMap', 'info');
 
-% save sampsToSecsMap:
-save(fullfile(opts.outputFolder, 'sampsToSecsMap.mat'),  'sampsToSecsMap')
+% save sampsToSecsMap (has to be 7.3 cause these can get BIG):
+save(fullfile(opts.outputFolder, 'sampsToSecsMap.mat'),  'sampsToSecsMap', '-v7.3')
 
 
 % ephys data to dat file:
