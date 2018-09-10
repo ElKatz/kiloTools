@@ -92,7 +92,7 @@ ops.root                = datFolder; % 'openEphys' only: where raw files are
 % ops.fs                  = 22000;        % sampling rate		(omit if already in chanMap file)
 % ops.NchanTOT            = 24;           % total number of channels (omit if already in chanMap file)
 % ops.Nchan               = 24;           % number of active channels (omit if already in chanMap file)
-ops.Nfilt               = 64;           % number of clusters to use (2-4 times more than Nchan, should be a multiple of 32)     		
+ops.Nfilt               = 96;           % number of clusters to use (2-4 times more than Nchan, should be a multiple of 32)     		
 ops.nNeighPC            = 12; % visualization only (Phy): number of channnels to mask the PCs, leave empty to skip (12)		
 ops.nNeigh              = 16; % visualization only (Phy): number of neighboring templates to retain projections of (16)		
 		

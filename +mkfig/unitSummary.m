@@ -25,14 +25,18 @@ inchesPerCol    = 2;
 figSz           = [inchesPerCol * nPlots, inchesPerRow * nUnits];
 clr             = lines(nUnits);
 
+
+[~, idxSort] = sort([unit.medWfPeakCh]);
+
 %%
-for iU = 1:nUnits
+iPlot = 1;
+for iU = idxSort
     thisUnit = unit(iU);
     
     %% waveform:
     plotNum = 1;
-    subplot(nUnits, nPlots, (iU-1)*nPlots + plotNum);
-    if iU==1
+    subplot(nUnits, nPlots, (iPlot-1)*nPlots + plotNum);
+    if iPlot==1
         title('med WF')
     end
     hold on
@@ -52,8 +56,8 @@ for iU = 1:nUnits
     
     %% isi dist 
     plotNum = plotNum+1;
-    subplot(nUnits, nPlots, (iU-1)*nPlots + plotNum);
-    if iU==1
+    subplot(nUnits, nPlots, (iPlot-1)*nPlots + plotNum);
+    if iPlot==1
         title('ISI dist')
     end
     hold on
@@ -68,8 +72,8 @@ for iU = 1:nUnits
     % this is hacky. I am not accounting for lapses in the recording. This
     % measure is only good enough for comparing units recorded at the same 
     % time, but not across different recoridngs.
-    subplot(nUnits, nPlots, (iU-1)*nPlots + plotNum);
-    if iU==1
+    subplot(nUnits, nPlots, (iPlot-1)*nPlots + plotNum);
+    if iPlot==1
         title('spCount')
     end
     hold on
@@ -81,8 +85,8 @@ for iU = 1:nUnits
     
     %% ACG:
     plotNum = plotNum+1;
-    subplot(nUnits, nPlots, (iU-1)*nPlots + plotNum);
-    if iU==1
+    subplot(nUnits, nPlots, (iPlot-1)*nPlots + plotNum);
+    if iPlot==1
         title('ACG')
     end
     hold on
@@ -96,8 +100,8 @@ for iU = 1:nUnits
     
     %% ACG zoom:
     plotNum = plotNum+1;
-    subplot(nUnits, nPlots, (iU-1)*nPlots + plotNum);
-    if iU==1
+    subplot(nUnits, nPlots, (iPlot-1)*nPlots + plotNum);
+    if iPlot==1
         title('ACG zoom')
     end
     hold on
@@ -116,8 +120,8 @@ for iU = 1:nUnits
     
     %% text:
     plotNum = plotNum+1;
-    subplot(nUnits, nPlots, (iU-1)*nPlots + plotNum);
-    if iU==1
+    subplot(nUnits, nPlots, (iPlot-1)*nPlots + plotNum);
+    if iPlot==1
         title('info')
     end
     hold on
@@ -144,6 +148,7 @@ for iU = 1:nUnits
         yPosStart = yPosStart+0.2;
     end
     
+    iPlot = iPlot + 1;
 end
 
 supertitle([unit(1).info.dsn ' - '  unit(1).info.meta], 18)

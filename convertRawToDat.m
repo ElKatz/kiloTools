@@ -182,37 +182,12 @@ switch rawFileType
             sampsToSecsMap(chunkIndex) = timeStamps;
             currentSample = chunkIndex(end)+1;
         end
-
-        
           
         % read the strobed word info (values & time stamps).
         strobedEvents.eventInfo = PL2EventTs(rawFullPath, 'Strobed');
         strobedEvents.RSTARTInfo = PL2EventTs(rawFullPath, 'RSTART');
         strobedEvents.RSTOPInfo = PL2EventTs(rawFullPath, 'RSTOP');
 
-
-        
-%         % map samples to timeStamps
-%         out.spikeTimesSecs = sampsToSecsMap(out.spikeTimesSamps);
-
-% % 
-% %  I like JPHs versoin better. this is my old version:
-% %         [adfreq, ~, ts, fn] = plx_ad_gap_info(rawFullPath, spkChNumber(1));
-% %         
-% %         % loop over recording fragments
-% %         tsMap = nan(sum(fn),1);
-% %         currSample = 1;
-% %         for ii = 1:length(fn)
-% %             timeStamps = (0:(fn(ii)-1)) / adfreq;
-% %             tsMap(currSample:(currSample - 1 + fn(ii))) = timeStamps + ts(ii);
-% %             currSample = currSample + fn(ii);
-% %         end
-% %          
-% %         disp('Getting plexon timestamps for strobed events');
-% %         strbChNumber = 257; % !!! this is true for rig A/B. verify this is true for your rig too...
-% %         [~, evTs, evSv] = plx_event_ts(rawFullPath, strbChNumber);
-        
-  
     otherwise
         error('bad filetype. Time to reconsider your life choices');
 end

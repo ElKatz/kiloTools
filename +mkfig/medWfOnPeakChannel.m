@@ -10,7 +10,7 @@ hold on
 depth = -25000;
 dTip2lowestCh = 500 + 800; % tip to lowest + lowest to ch28
 
-yScaler = 0.05;
+yScaler = 0.03;
 
 for iS = 1:sp.nClusters
     ch = sp.medWfPeakCh(iS);
