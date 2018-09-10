@@ -244,7 +244,8 @@ end
 if p.Results.medWave
     disp('Retreiving median waveforms...')
     load(fullfile(ksDir, 'ops.mat'));
-    d = dir(ops.fbinary);
+%     d = dir(ops.fbinary);
+    d = dir([info.ksDir '/*.dat']);
     nSamp = d.bytes/2/sp.n_channels_dat;
     dataSize = [sp.n_channels_dat nSamp];
     chanMap = readNPY(fullfile(ksDir, 'channel_map.npy'));
