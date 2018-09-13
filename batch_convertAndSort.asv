@@ -14,8 +14,9 @@ paths = addPathsForSpikeSorting;
 %% boolleans:
 
 performConversion   = true;
-performKiloSort     = true;
-
+performKiloSort     = false;
+performSp           = true;
+saveCombo           = true;
 %% list of paths to raw ephys files
 
 fs              = 40000;
@@ -40,12 +41,8 @@ folderList = {...
 % 'D:\Data\katz\GPe_record\20180823a',...
 % 'D:\Data\katz\GPe_record\20180823b',...
 % 'D:\Data\katz\GPe_record\20180823c',...
-% 'D:\Data\katz\GPe_record\20180823d',...
+'D:\Data\katz\GPe_record\20180823d',...
 % 'D:\Data\katz\GPe_record\20180823e',...
-'D:\Data\katz\GPe_record\r20180912a',...
-'D:\Data\katz\GPe_record\r20180912b',...
-'D:\Data\katz\GPe_record\r20180912c',...
-'D:\Data\katz\GPe_record\r20180912d',...
     }; 
 
 nFiles = numel(folderList);
@@ -78,11 +75,15 @@ for iF = 1:nFiles
     % convert:
     if performConversion
         if exist(rawPath{iF}, 'file')
-            convertRawToDat(rawPath{iF});
+            [~,~, combo] = convertRawToDat(rawPath{iF});
         end
     end
     
-    
+    % get strobes:
+    strobedEvents = getStrobedFromRaw(rawPath{iF});
+    % save strobedEvents:
+    save(fullfile(kiloFolderList{iF}, 'strobedEvents.mat'),  'strobedEvents');
+
     
     % kiloSort:
     if performKiloSort
@@ -93,37 +94,27 @@ for iF = 1:nFiles
         end
     end
     
+
+%         
+%     if saveCombo
+%         disp('Saving combo....')
+%         combo.sp = sp;
+%         save(fullfile(folderList{iF}, [fileName{iF} '_combo.mat']), '-struct', 'combo',  '-v7.3');
+%     end
+%     disp('DONE!!!');
+%     disp('~!~!~!~!~!~')
 end
 
 %% NOW YOU SORT BY HAND.
-% phy
-% phy
-% phy
-% phy
-% phy
-% phy
-% phy
-% phy
-
 %% AND THEN:
 
 %%
 
 
 for iF = 1:nFiles
-
-    % get strobes:
-    strobedEvents = getStrobedFromRaw(rawPath{iF});
-    % save strobedEvents:
-    save(fullfile(kiloFolderList{iF}, 'strobedEvents.mat'),  'strobedEvents');
-
-    
-    sp = getSp(kiloFolderList{iF});
-    
-    % combo:
-    combo.sp = sp;
-    combo.strobedEvents = strobedEvents;
-    save(fullfile(folderList{iF}, [fileName{iF} '_combo.mat']), '-struct', 'combo',  '-v7.3');
+    if performSp
+        sp = getSp(kiloFolderList{iF});
+    end
 end
     
     %%

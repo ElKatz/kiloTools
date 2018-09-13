@@ -1,4 +1,4 @@
-function [samples, datPath] = convertRawToDat(rawFullPath, opts)
+function [samples, datPath, combo] = convertRawToDat(rawFullPath, opts)
 %   [samples, datPath] = convertRawToDat(rawFullPath, opts)
 %
 % Converts continuous data from raw ephys file to matrix 'samples' of size:
@@ -26,7 +26,7 @@ function [samples, datPath] = convertRawToDat(rawFullPath, opts)
 %
 % generalize to multiple file formats. vet.
 
-
+samples = 0;
 %% paths:
 addPathsForSpikeSorting;
 
@@ -127,7 +127,7 @@ switch rawFileType
         nSamples    = tmp(1); % taking the number of samples in first spk channel. Rest are identical.
         
         % build data matrix 'samples' of size [nChannels, nSamples]:
-        samples     = zeros(nChannels, nSamples, 'int16');
+%         samples     = zeros(nChannels, nSamples, 'int16');
         tChRead     = nan(nChannels,1); % time keeping
         % gotta map out indices to plxeon's ad channel numbers:
         [~,   adChNumber]   = plx_ad_chanmap(rawFullPath);
@@ -147,10 +147,7 @@ switch rawFileType
         end
         
         %%  extract timing information from raw file in "real" time
-        % we'll get:
-        %   tsMap - time vector
-        %   evTs - event timestamp (i.e. strobes)
-        %   evSv - event strobe value
+
         %
         % 'tsMap' has a timestamp for every sample recorded. This will be a
         % vecotor of size nSamples. tsMap is used to convert from the spike 
@@ -183,11 +180,7 @@ switch rawFileType
             currentSample = chunkIndex(end)+1;
         end
           
-        % read the strobed word info (values & time stamps).
-        strobedEvents.eventInfo = PL2EventTs(rawFullPath, 'Strobed');
-        strobedEvents.RSTARTInfo = PL2EventTs(rawFullPath, 'RSTART');
-        strobedEvents.RSTOPInfo = PL2EventTs(rawFullPath, 'RSTOP');
-
+        
     otherwise
         error('bad filetype. Time to reconsider your life choices');
 end
@@ -237,8 +230,6 @@ info.spkChNumber    = spkChNumber;
 info.opts           = opts;
 info.datestr        = datestr(now, 'yyyymmddTHHMM');
 
-% save strobedEvents:
-save(fullfile(opts.outputFolder, 'strobedEvents.mat'),  'strobedEvents');
 
 % save info:
 save(fullfile(opts.outputFolder, 'convertInfo.mat'),  'info');
@@ -251,8 +242,7 @@ save(fullfile(opts.outputFolder, 'convertInfo.mat'),  'info');
 % save sampsToSecsMap (has to be 7.3 cause these can get BIG):
 save(fullfile(opts.outputFolder, 'sampsToSecsMap.mat'),  'sampsToSecsMap', '-v7.3')
 
-
-% ephys data to dat file:
+% % ephys data to dat file:
 fidout = fopen(datPath, 'a'); % opening file for appending
 fwrite(fidout, samples, 'int16');
 fclose(fidout);

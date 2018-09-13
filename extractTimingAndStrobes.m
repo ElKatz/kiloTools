@@ -3,6 +3,23 @@ function [] = extractTimingAndStrobes(rawFullPath)
 % HACKKKKK!!!!!
 
 
+if ~exist('rawFullPath', 'var')
+    [rawFileName, rawFolder] = uigetfile('*.*', 'Select files for conversion', '~/Dropbox/Code/spike_sorting/');
+else
+    [rawFolder, rawFileName, rawFileType]  = fileparts(rawFullPath);
+    rawFileName = [rawFileName rawFileType];
+    rawFileType = rawFileType(2:end);
+end
+
+% full path to plx file:
+rawFullPath = fullfile(rawFolder, rawFileName);
+
+% datasetname:
+dsn = rawFileName(1:end-4);
+
+%%
+
+
 % init:
 if ~exist('opts', 'var')
     opts = struct;
