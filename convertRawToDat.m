@@ -211,7 +211,7 @@ if opts.removeArtifacts
     samples(:, idxBad)  = [];
     % remove the "bad" samples from timing vector too:
 %     tsMap(idxBad)       = [];
-    out.spikeTimesSecs(idxBad) = []; 
+    sampsToSecsMap(idxBad) = []; 
          
     fprintf('removed %0.0d of %0.0d samples, (%0.3f percent)\n', sum(idxBad), numel(idxBad), mean(idxBad)*1e2);
 end
