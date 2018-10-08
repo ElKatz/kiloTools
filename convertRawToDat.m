@@ -5,15 +5,17 @@ function [samples, datPath, combo] = convertRawToDat(rawFullPath, opts)
 % [nSamples, nChannels] and saves as binary .dat file in same folder as
 % ephys file (unless specified otherwise in opts)
 % INPUT:
-%   ephysFullPath - Optional. full path to raw ephys data file.
+%   rawFullPath  - Optional. full path to raw ephys data file.
 %                   This file can be 'plx', 'mpx', 'oe', whatever, as long
 %                   as it contains the continuous voltage traces.
 %
-% !!!!! AT THE MOMENT, THIS FUNCTION ONLY DEALS WITH plx FILES !!!!!
-%r
+% !!!!! AT THE MOMENT, THIS FUNCTION ONLY DEALS WITH plx/pl2 FILES !!!!!
+%
 %   opts - (optional) struct of options:
 %   .outputFolder - full path to folder to save dat file (default: same
 %                   folder as raw file)
+%   .commonAverageReferencing - will subtract average over channels
+%   .removeArtifacts - enter at own risk!
 %
 % OUTPUT:
 %   samples - [nChannels, nSamples] consisting of all continuous data
@@ -26,7 +28,7 @@ function [samples, datPath, combo] = convertRawToDat(rawFullPath, opts)
 %
 % generalize to multiple file formats. vet.
 
-samples = 0;
+
 %% paths:
 addPathsForSpikeSorting;
 
@@ -82,6 +84,10 @@ end
 
 %% begin conversion:
 
+if ~exist('rawFileType', 'var')
+        rawFileType = 'pl2';
+end
+    
 disp('--------------------------------------------------------------')
 fprintf('Performing conversion of %s\n', dsn)
 disp('--------------------------------------------------------------')
@@ -90,6 +96,7 @@ tic
 % filetype (e.g. plx, mpx, etc.) gets its own case in this switch loop:
 tStart = tic;
 switch rawFileType
+    
     case {'plx', 'pl2'}
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%% plx plx plx plx plx plx plx plx plx plx plx plx plx plx %%%
@@ -127,23 +134,17 @@ switch rawFileType
         nSamples    = tmp(1); % taking the number of samples in first spk channel. Rest are identical.
         
         % build data matrix 'samples' of size [nChannels, nSamples]:
-%         samples     = zeros(nChannels, nSamples, 'int16');
+        samples     = zeros(nChannels, nSamples, 'int16');
         tChRead     = nan(nChannels,1); % time keeping
         % gotta map out indices to plxeon's ad channel numbers:
         [~,   adChNumber]   = plx_ad_chanmap(rawFullPath);
         spkChNumber = adChNumber(idxGoodCh);
         fprintf('%0.1fs: Getting data from %0.0d spike channels!\n', toc, sum(idxGoodCh))
         for iCh = 1:nChannels
-            [~, n, ~, ~, ad] = plx_ad(rawFullPath, spkChNumber(iCh)); % returns signal in miliVolts
-            if n>0
-                tChRead(iCh) = toc;
-                fprintf('\t%0.1fs: read channel #%0.0d \n', tChRead(iCh), spkChNumber(iCh));
-                % data matrix 'samples':
-                samples(iCh,1:n) = int16(ad);
-            else
-                warning('wtf?! something''s wrong i the assigning SPK channel numbers. fix this')
-                keyboard
-            end
+            tChRead(iCh) = toc;
+            fprintf('\t%0.1fs: read channel #%0.0d \n', tChRead(iCh), spkChNumber(iCh));
+            % data matrix 'samples':
+            samples(iCh,:) = adReadWrapper(rawFullPath, spkChNumber(iCh)); % returns signal in miliVolts
         end
         
         %%  extract timing information from raw file in "real" time
@@ -249,6 +250,8 @@ fclose(fidout);
 
 fprintf('%f0.1s: CONVERSION COMPLETE!', toc)
 
+
+end
 %% TEST ZONE
 % clear t
 % for iCh = 1:nChannels
@@ -271,3 +274,14 @@ fprintf('%f0.1s: CONVERSION COMPLETE!', toc)
 % set(gca, 'XTick', 0:fs/2:nSecs, 'XTickLabel', 0:.5:nSecs)
 
 % toc
+
+%%
+
+function out = adReadWrapper(fileName, chStr)
+
+[~, ~, ~, ~, ad] = plx_ad(fileName, chStr);
+out = int16(ad);
+
+end
+
+
