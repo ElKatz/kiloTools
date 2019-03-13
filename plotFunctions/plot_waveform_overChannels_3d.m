@@ -1,16 +1,11 @@
-function hFig = medWfOnPeakChannel_3(sp)
-%   hFig = mkfig.medWfOnPeakChannel_3(sp)
+function hA = plot_waveform_overChannels_3d(sp)
 
-%%
-hFig = figure; 
-figSz = [8 8];
-%%
 hold on
 
 depth = -25000;
 dTip2lowestCh = 500 + 800; % tip to lowest + lowest to ch28
 
-yScaler = 0.001;
+yScaler = 0.5;
 
 for iS = 1:sp.nClusters
     ch = sp.medWfPeakCh(iS);
@@ -34,4 +29,3 @@ view(3)
 % xlim([-500 500])
 xlabel('x distance (µ)')
 ylabel('y distance from bottom of grid (µ)')
-formatFig(hFig, figSz);

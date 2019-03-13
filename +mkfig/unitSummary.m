@@ -1,5 +1,9 @@
-function [hF] = unitSummary(unit)
-%   [hF] = mkfig.unitSummary(unit)
+function [hFig] = unitSummary(su, opts)
+%   [hF] = mkfig.unitSummary(su, opts)
+
+if ~exist('opts', 'var')
+    opts = [];
+end
 
 %% User setup:
 % do you wish to plot individual waveforms behind the mean waveform?
@@ -17,21 +21,21 @@ nPlots = 6;
 
 %% figure setup:
 % every unit gets a row in the figure:
-nUnits  = numel(unit); 
+nUnits  = numel(su); 
 
-hF              = figure;
+hFig            = figure;
 inchesPerRow    = 2;
 inchesPerCol    = 2;
 figSz           = [inchesPerCol * nPlots, inchesPerRow * nUnits];
 clr             = lines(nUnits);
 
 
-[~, idxSort] = sort([unit.medWfPeakCh]);
+[~, idxSort] = sort([su.medWfPeakCh]);
 
 %%
 iPlot = 1;
 for iU = idxSort
-    thisUnit = unit(iU);
+    thisUnit = su(iU);
     
     %% waveform:
     plotNum = 1;
@@ -151,9 +155,15 @@ for iU = idxSort
     iPlot = iPlot + 1;
 end
 
-supertitle([unit(1).info.dsn ' - '  unit(1).info.meta], 18)
-formatFig(hF, figSz)
-
+supertitle(su(1).info.dsn, 12)
+formatFig(hFig, figSz)
+if isfield(opts, 'saveFigs') && opts.saveFigs == true
+    if ~isfield(opts, 'dirFigs')
+        opts.dirFigs = pwd;
+    end
+    saveas(hFig, fullfile(opts.dirFigs, 'figures', 'unitSummary.pdf'));
+end
+    
     
 
 

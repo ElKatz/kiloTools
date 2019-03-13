@@ -187,6 +187,7 @@ sp.spikeClusters    = spikeClusters;
 sp.tempScalingAmps  = tempScalingAmps;
 sp.clusterScore     = clusterScore;
 sp.clusterId        = clusterId;
+sp.clusterStr       = arrayfun(@(x) sprintf('%0.3d', x), clusterId, 'UniformOutput', 0); % for easy figure titles
 sp.nClusters        = numel(sp.clusterId);
 sp.nChannels        = numel(xcoords);
 sp.xcoords          = xcoords;

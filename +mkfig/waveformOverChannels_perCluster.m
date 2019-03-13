@@ -1,11 +1,17 @@
-function hF = medWfOverChannels(sp)
-%   hF = mkfig.medWfOverChannels(sp)
+function hFig = waveformOverChannels_perCluster(sp, opts)
+%   hFig = mkfig.waveformOverChannels_perCluster(sp, opts)
 %
 % makes figure with a subplot per cluster. each subplot has the median
 % waveform on each of the nChannels. works on kilosort output sp struct
 %
 % INPUT:
 %   sp  - works on kilosort output sp struct (see getSp.m)
+%%
+
+if ~exist('opts', 'var')
+    opts = [];
+end
+
 %%
 hFig = figure;
 figSz = [sp.nClusters, 4];
@@ -30,12 +36,21 @@ for iClu = idxSort
     ylim([min(sp.ycoords) - 100, max(sp.ycoords) + 100])
     set(gca, 'XTick',[], 'YTick',[])
     if iPlot==1
-        ylabel('x distance (µ)')
-        xlabel('y distance (µ)')
+        ylabel('y distance (µ)')
+        xlabel('x distance (µ)')
         set(gca, 'XTick', unique(sp.xcoords), 'YTick', unique(sp.ycoords))
     end
     title(['cid: ' num2str(sp.clusterId(iClu))])
     iPlot = iPlot + 1;
 end
 
+%%
 formatFig(hFig, figSz);
+supertitle(sp.info.dsn, 12)
+if isfield(opts, 'saveFigs') && opts.saveFigs == true
+    if ~isfield(opts, 'dirFigs')
+        opts.dirFigs = pwd;
+    end
+    saveas(hFig, fullfile(opts.dirFigs, 'figures', 'waveformOverChannels_perCluster.pdf'));
+end
+

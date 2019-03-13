@@ -1,4 +1,4 @@
-function su = sp2su(sp)
+function su = sp2su(sp, ksDir)
 %
 % converts the session-level 'sp' struct into a structarray for single
 % untis: 'su', of size nUnits.
@@ -37,3 +37,9 @@ for iS = 1:nSus
 end
 
 disp('Done!')
+
+%% save su
+
+save(fullfile(ksDir, 'su.mat'), 'su')
+
+disp('Done saving ''su''')
