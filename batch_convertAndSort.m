@@ -19,41 +19,14 @@ performKiloSort     = true;
 %% list of paths to raw ephys files
 
 fs              = 40000;
-nCh             = 31;
-probeGeometry   = 'linear200';
+nCh             = 28;
+probeGeometry   = 'linear125';
 
 
 folderList = {...
-%     'D:\Data\katz\GPe_record\20180810a',...
-% 'D:\Data\katz\GPe_record\20180810b',...
-% 'D:\Data\katz\GPe_record\20180814a',...
-% 'D:\Data\katz\GPe_record\20180814b',...
-% 'D:\Data\katz\GPe_record\20180816a',...
-% 'D:\Data\katz\GPe_record\20180816b',...
-% 'D:\Data\katz\GPe_record\20180816c',...
-% 'D:\Data\katz\GPe_record\20180816d',...
-% 'D:\Data\katz\GPe_record\20180818a',...
-% 'D:\Data\katz\GPe_record\20180818b',...
-% 'D:\Data\katz\GPe_record\20180818c',...
-% 'D:\Data\katz\GPe_record\20180818d',...
-% 'D:\Data\katz\GPe_record\20180818e',...
-% 'D:\Data\katz\GPe_record\20180823a',...
-% 'D:\Data\katz\GPe_record\20180823b',...
-% 'D:\Data\katz\GPe_record\20180823c',...
-% 'D:\Data\katz\GPe_record\20180823d',...
-% 'D:\Data\katz\GPe_record\20180823e',...
-% 'D:\Data\katz\GPe_record\r20180912a',...
-% 'D:\Data\katz\GPe_record\r20180912b',...
-% 'D:\Data\katz\GPe_record\r20180912c',...
-% 'D:\Data\katz\GPe_record\r20180912d',...
-% 'D:\Data\katz\GPe_record\r20180929a',...
-% 'D:\Data\katz\GPe_record\r20180929b',...
-% 'D:\Data\katz\GPe_record\r20180929c',...
-% 'D:\Data\katz\GPe_record\r20180929d',...
-'D:\Data\katz\GPe_record\r20181002a',...
-'D:\Data\katz\GPe_record\r20181002b',...
-'D:\Data\katz\GPe_record\r20181002c',...
-    }; 
+    'Z:\LAB PROJECTS\cla_record\data\\p20190323a\', ...
+    'Z:\LAB PROJECTS\cla_record\data\\p20190323b\', ...
+    };
 
 nFiles = numel(folderList);
 
@@ -74,7 +47,7 @@ for iF = 1:nFiles
     datPathList{iF}     = fullfile(kiloFolderList{iF}, [fileName{iF} '.dat']);
 end
 
-%% (1) convert, (2) copy masterMegaFile into kiloSorted folder, (3) sort:
+%%  (1) convert, (2) copy masterMegaFile into kiloSorted folder, (3) sort:
 
 for iF = 1:nFiles
     disp('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
@@ -101,36 +74,41 @@ for iF = 1:nFiles
 end
 
 %% NOW YOU SORT BY HAND.
-% phy
-% phy
-% phy
-% phy
-% phy
-% phy
-% phy
-% phy
 
-%% AND THEN:
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% manually curate spikes with PHY %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% and then run batch_mkKsFigs.m %%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
 
 %%
-
-
-for iF = 1:nFiles
-
-    % get strobes:
-    strobedEvents = getStrobedFromRaw(rawPath{iF});
-    % save strobedEvents:
-    save(fullfile(kiloFolderList{iF}, 'strobedEvents.mat'),  'strobedEvents');
-
-    
-    sp = getSp(kiloFolderList{iF});
-    
-    % combo:
-    combo.sp = sp;
-    combo.strobedEvents = strobedEvents;
-    save(fullfile(folderList{iF}, [fileName{iF} '_combo.mat']), '-struct', 'combo',  '-v7.3');
-end
-    
+% % %% AND THEN:
+% % 
+% % %%
+% % 
+% % 
+% % for iF = 1:nFiles
+% % 
+% %     % get strobes:
+% %     strobedEvents = getStrobedFromRaw(rawPath{iF});
+% %     % save strobedEvents:
+% %     save(fullfile(kiloFolderList{iF}, 'strobedEvents.mat'),  'strobedEvents');
+% % 
+% %     
+% %     sp = getSp(kiloFolderList{iF});
+% %     
+% %     % combo:
+% %     combo.sp = sp;
+% %     combo.strobedEvents = strobedEvents;
+% %     save(fullfile(folderList{iF}, [fileName{iF} '_combo.mat']), '-struct', 'combo',  '-v7.3');
+% % end
+% %     
     %%
 
 % Fuckup:
