@@ -20,7 +20,7 @@ yScaler = .1;
 x  = 1:size(sp.medWfs, 3);
 
 nX = numel(unique(sp.xcoords));
-nY = numel(unique(sp.ycoords));
+nY = numel(sp.ycoords);
 
 [~, idxSort] = sort(sp.medWfPeakCh);
 

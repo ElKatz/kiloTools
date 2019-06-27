@@ -255,8 +255,8 @@ if p.Results.medWave
     gain = 0.6/512/500*1e6; % raw file units to uV ***SHOULD BE RIG SPECIFIC. NEED TO DO THIS...
     
     % median wf per cluster per channel, size: [nClu, nCh, nSamps]
-%     sp.medWfs = extractMedianWFs(sp.spikeClusters, sp.spikeTimesSecs, sp.sample_rate, fullfile(ksDir, sp.dat_path), sp.dtype, dataSize, chanMap, gain);
-    sp.medWfs = extractMedianWFs(sp.spikeClusters, sp.spikeTimesSamps, sp.sample_rate, fullfile(ksDir, sp.dat_path), sp.dtype, dataSize, chanMap, gain, 'samples');
+    sp.medWfs = extractMedianWFs(sp.spikeClusters, sp.spikeTimesSecs, sp.sample_rate, fullfile(ksDir, sp.dat_path), sp.dtype, dataSize, chanMap, gain);
+    sp.medWfs = extractMedianWFs(sp.spikeClusters, sp.spikeTimesSamps, sp.sample_rate, fullfile(ksDir, sp.dat_path), sp.dtype, dataSize, chanMap, gain);
     % median wf per cluster on peak amplitude channel, size: [nClu, nSamps]
     for iS = 1:sp.nClusters 
         medWfPerCh              = squeeze(sp.medWfs(iS,:,:))';
