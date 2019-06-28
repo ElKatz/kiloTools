@@ -42,7 +42,7 @@ connected       = true(nCh, 1);
 chanMap         = 1:nCh;
 chanMap0ind     = chanMap - 1;
 
-[xcoords, ycoords, kcoords] = probeGeometry2coords(probeGeometry);
+[xcoords, ycoords, kcoords] = probeGeometry2coords(probeGeometry, nCh);
 
 % save:
 save(fullfile(datFolder, 'chanMap.mat'), ...
