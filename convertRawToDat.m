@@ -181,11 +181,11 @@ switch rawFileType
           
         %% extract strobed events:
         % read the strobed word info (values & time stamps):
-        ev.eventInfo = PL2EventTs(ev.PL2fileName, 'Strobed');
+        ev.eventInfo = PL2EventTs(rawFullPath, 'Strobed');
 
         % read the time-stamps of recording start / stop events:
-        ev.startTs = PL2StartStopTs(ev.PL2fileName, 'start');
-        ev.stopTs = PL2StartStopTs(ev.PL2fileName, 'stop');
+        ev.startTs = PL2StartStopTs(rawFullPath, 'start');
+        ev.stopTs = PL2StartStopTs(rawFullPath, 'stop');
 
     otherwise
         error('bad filetype. Time to reconsider your life choices');

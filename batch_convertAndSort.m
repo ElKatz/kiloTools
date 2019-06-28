@@ -19,7 +19,7 @@ performKiloSort     = true;
 %% list of paths to raw ephys files
 
 fs              = 40000;
-nCh             = 48;
+nCh             = 47;
 Nfilt           = 32*5;     % number of clusters to use (2-4 times more than Nchan, should be a multiple of 32)
 probeGeometry   = 'dualLinear';
 
