@@ -19,12 +19,17 @@ performKiloSort     = true;
 %% list of paths to raw ephys files
 
 fs              = 40000;
-nCh             = 28;
-probeGeometry   = 'linear125';
+nCh             = 48;
+Nfilt           = 32*5;     % number of clusters to use (2-4 times more than Nchan, should be a multiple of 32)
+probeGeometry   = 'dualLinear';
 
 
 folderList = {...
-    'Z:\LAB PROJECTS\cla_record\data\\p20190314b\', ...
+     'Y:\LAB PROJECTS\scDualVprobe\data\ram20190627a\',...
+%     'Y:\LAB PROJECTS\scDualVprobe\data\ram20190627b\',...
+%     'Y:\LAB PROJECTS\scDualVprobe\data\ram20190627c\',...
+%     'Y:\LAB PROJECTS\scDualVprobe\data\ram20190627d\',...
+%     'Y:\LAB PROJECTS\scDualVprobe\data\ram20190627e\',...
     };
 
 nFiles = numel(folderList);
@@ -85,36 +90,9 @@ end
 
 
 
+% fin.
 
-%%
-% % %% AND THEN:
-% % 
-% % %%
-% % 
-% % 
-% % for iF = 1:nFiles
-% % 
-% %     % get strobes:
-% %     strobedEvents = getStrobedFromRaw(rawPath{iF});
-% %     % save strobedEvents:
-% %     save(fullfile(kiloFolderList{iF}, 'strobedEvents.mat'),  'strobedEvents');
-% % 
-% %     
-% %     sp = getSp(kiloFolderList{iF});
-% %     
-% %     % combo:
-% %     combo.sp = sp;
-% %     combo.strobedEvents = strobedEvents;
-% %     save(fullfile(folderList{iF}, [fileName{iF} '_combo.mat']), '-struct', 'combo',  '-v7.3');
-% % end
-% %     
-    %%
 
-% Fuckup:
-% I acccidentally resorted these files after having already sorted+phy'd
-% them. The resorting (with no phy) overwrote most files. most notable,
-% spike_clusters.npy (which Amar uses to read in phy'd clusters). So it is
-% crucial that we read the .csv and and not the .npy for these sessions!
-% {'Z:\katz_server\fstAttention\data\fst_with_sc_inactivation\20171214\pre\20171214_t1240' }
-%     {'Z:\katz_server\fstAttention\data\fst_with_sc_inactivation\20171211\pre\20171211_t1253' }
-%     {'Z:\katz_server\fstAttention\data\fst_with_sc_inactivation\20171211\post\20171211_t1655'}
+%%%%%%%%%%%%%%%%%%%%%
+
+

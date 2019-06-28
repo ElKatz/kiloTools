@@ -1,4 +1,4 @@
-function [] = masterMegaFile(datPath, fs, nCh, probeGeometry)
+function [] = masterMegaFile(datPath, fs, nCh, probeGeometry, Nfilt)
 % The kilosort repo comes with 3 files that need to be editted:
 %       masterFile.m, configFile.m, & createChanMap.m
 % 3 files are unnecessarily messy and I'm "1 file to rule them all" kinda 
@@ -42,32 +42,7 @@ connected       = true(nCh, 1);
 chanMap         = 1:nCh;
 chanMap0ind     = chanMap - 1;
 
-switch probeGeometry
-    case 'linear50'
-        % linear geometry:
-        ySpacing = 50;
-        xcoords = zeros(nCh,1);
-        ycoords = (((nCh-1) * ySpacing):-ySpacing:0)';
-        kcoords = ones(nCh,1);
-    case 'linear125'
-        % linear geometry:
-        ySpacing = 125;
-        xcoords = zeros(nCh,1);
-        ycoords = (((nCh-1) * ySpacing):-ySpacing:0)';
-        kcoords = ones(nCh,1);
-    case 'linear200'
-        % linear geometry:
-        ySpacing = 200;
-        xcoords = zeros(nCh,1);
-        ycoords = (((nCh-1) * ySpacing):-ySpacing:0)';
-        kcoords = ones(nCh,1);
-    case 'stereo'
-        % sterotrode geometry
-        xSpacing = 50; 
-        ySpacing = 50;
-        xcoords = xSpacing * repmat([0 1]', nCh/2,1);
-        ycoords = ySpacing * kron(((nCh/2):-1:1)-1, [1 1])'; % using kron for stereo geometry
-end
+[xcoords, ycoords, kcoords] = probeGeometry2coords(probeGeometry);
 
 % save:
 save(fullfile(datFolder, 'chanMap.mat'), ...
@@ -92,9 +67,13 @@ ops.root                = datFolder; % 'openEphys' only: where raw files are
 % ops.fs                  = 22000;        % sampling rate		(omit if already in chanMap file)
 % ops.NchanTOT            = 24;           % total number of channels (omit if already in chanMap file)
 % ops.Nchan               = 24;           % number of active channels (omit if already in chanMap file)
-ops.Nfilt               = 64;           % number of clusters to use (2-4 times more than Nchan, should be a multiple of 32)     		
-ops.nNeighPC            = 12; % visualization only (Phy): number of channnels to mask the PCs, leave empty to skip (12)		
-ops.nNeigh              = 16; % visualization only (Phy): number of neighboring templates to retain projections of (16)		
+if exist('nFilt', 'var')
+    ops.Nfilt = Nfilt;
+else
+    ops.Nfilt               = 64;           % number of clusters to use (2-4 times more than Nchan, should be a multiple of 32)
+end
+ops.nNeighPC            = 12; % visualization only (Phy): number of channnels to mask the PCs, leave empty to skip (12)
+ops.nNeigh              = 16; % visualization only (Phy): number of neighboring templates to retain projections of (16)
 		
 % options for channel whitening		
 ops.whitening           = 'full'; % type of whitening (default 'full', for 'noSpikes' set options for spike detection below)		
