@@ -109,10 +109,8 @@ switch rawFileType
             chNameList{ii} = adChName(ii,:);
         end
         
-        % get indices for the spike channels (i.e. not the lfp):
-        % *alphaLab spike files are saved with the name "SPK"  and plexon are
-        % "CSPK" so I'm just gonna use "SPK" as the identifier:
-        spkChannelStr = 'SPK';
+        % get indices for the spike channels contunous ("SPKC")
+        spkChannelStr = 'SPKC';
         idxSpkCh      = false(numel(chNameList),1);
         for iCh = 1:numel(chNameList)
             if strfind(chNameList{iCh}, spkChannelStr)
@@ -181,7 +179,14 @@ switch rawFileType
             currentSample = chunkIndex(end)+1;
         end
           
-        
+        %% extract strobed events:
+        % read the strobed word info (values & time stamps):
+        ev.eventInfo = PL2EventTs(ev.PL2fileName, 'Strobed');
+
+        % read the time-stamps of recording start / stop events:
+        ev.startTs = PL2StartStopTs(ev.PL2fileName, 'start');
+        ev.stopTs = PL2StartStopTs(ev.PL2fileName, 'stop');
+
     otherwise
         error('bad filetype. Time to reconsider your life choices');
 end
@@ -242,6 +247,10 @@ save(fullfile(opts.outputFolder, 'convertInfo.mat'),  'info');
 
 % save sampsToSecsMap (has to be 7.3 cause these can get BIG):
 save(fullfile(opts.outputFolder, 'sampsToSecsMap.mat'),  'sampsToSecsMap', '-v7.3')
+
+
+% save strobe info:
+save(fullfile(opts.outputFolder, 'events.mat'),  'ev')
 
 % % ephys data to dat file:
 fidout = fopen(datPath, 'a'); % opening file for appending
