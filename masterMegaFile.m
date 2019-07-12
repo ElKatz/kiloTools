@@ -67,7 +67,7 @@ ops.root                = datFolder; % 'openEphys' only: where raw files are
 % ops.fs                  = 22000;        % sampling rate		(omit if already in chanMap file)
 % ops.NchanTOT            = 24;           % total number of channels (omit if already in chanMap file)
 % ops.Nchan               = 24;           % number of active channels (omit if already in chanMap file)
-if exist('nFilt', 'var')
+if exist('Nfilt', 'var')
     ops.Nfilt = Nfilt;
 else
     ops.Nfilt               = 64;           % number of clusters to use (2-4 times more than Nchan, should be a multiple of 32)

@@ -181,11 +181,11 @@ switch rawFileType
           
         %% extract strobed events:
         % read the strobed word info (values & time stamps):
-        ev.eventInfo = PL2EventTs(rawFullPath, 'Strobed');
+        strobedEvents.eventInfo = PL2EventTs(rawFullPath, 'Strobed');
 
         % read the time-stamps of recording start / stop events:
-        ev.startTs = PL2StartStopTs(rawFullPath, 'start');
-        ev.stopTs = PL2StartStopTs(rawFullPath, 'stop');
+        strobedEvents.startTs = PL2StartStopTs(rawFullPath, 'start');
+        strobedEvents.stopTs = PL2StartStopTs(rawFullPath, 'stop');
 
     otherwise
         error('bad filetype. Time to reconsider your life choices');
@@ -250,7 +250,7 @@ save(fullfile(opts.outputFolder, 'sampsToSecsMap.mat'),  'sampsToSecsMap', '-v7.
 
 
 % save strobe info:
-save(fullfile(opts.outputFolder, 'events.mat'),  'ev')
+save(fullfile(opts.outputFolder, 'strobedEvents.mat'),  'strobedEvents')
 
 % % ephys data to dat file:
 fidout = fopen(datPath, 'a'); % opening file for appending
