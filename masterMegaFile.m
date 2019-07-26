@@ -160,7 +160,21 @@ end
 % remove temporary file
 delete(ops.fproc);
 
-% ding!
+
+%% sampsToSecsMap:
+% load "samples to seconds map" (created during 'convertRawToDat.m'), 
+% transform spike times in samples to spike times in seconds and store.
+disp('Loading samples-to-seconds map.');
+load(fullfile(ops.outputFolder, 'sampsToSecsMap.mat'));
+disp('Map loaded - transforming spike times from samples to seconds.')
+spikeTimesSamples = readNPY(fullfile(ops.outputFolder, ...
+    'spike_times.npy'));
+spikeTimesSeconds = sampsToSecsMap(spikeTimesSamples);
+disp('Saving spike times in seconds to .npy file.')
+writeNPY(spikeTimesSeconds, fullfile(ops.outputFolder, ...
+    'spike_times_seconds.npy'));
+
+%% ding!
 try
     load gong
     soundsc(y, Fs)
