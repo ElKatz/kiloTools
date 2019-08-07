@@ -29,6 +29,8 @@ function [samples, datPath, combo] = convertRawToDat(rawFullPath, opts)
 % generalize to multiple file formats. vet.
 
 
+dbstop if error
+
 %% paths:
 addPathsForSpikeSorting;
 
@@ -161,8 +163,12 @@ switch rawFileType
         
         % must read in a spike channel to construct the "timestamp map" from
         % samples (kilosort) to time in seconds.
-        ad = PL2Ad(rawFullPath, 'SPKC01');
-
+        switch rawFileType
+            case 'plx'
+                [ad.ADFreq, ~,  ad.FragTs, ad.FragCounts] = plx_ad(rawFullPath, 'SPKC01');
+            case 'pl2'
+                ad = PL2Ad(rawFullPath, 'SPKC01');
+        end
         % place to store the "map" from samples to seconds.
         sampsToSecsMap = zeros(sum(ad.FragCounts),1);
 
@@ -181,12 +187,20 @@ switch rawFileType
           
         %% extract strobed events:
         % read the strobed word info (values & time stamps):
-        strobedEvents.eventInfo = PL2EventTs(rawFullPath, 'Strobed');
+         switch rawFileType
+            case 'plx'
+                [~, strobedEvents.eventInfo.Ts, strobedEvents.eventInfo.Strobed] = plx_event_ts(filename, 257);
+                
+            case 'pl2'
+                strobedEvents.eventInfo = PL2EventTs(rawFullPath, 'Strobed');
 
-        % read the time-stamps of recording start / stop events:
-        strobedEvents.startTs = PL2StartStopTs(rawFullPath, 'start');
-        strobedEvents.stopTs = PL2StartStopTs(rawFullPath, 'stop');
+                % read the time-stamps of recording start / stop events:
+                strobedEvents.startTs = PL2StartStopTs(rawFullPath, 'start');
+                strobedEvents.stopTs = PL2StartStopTs(rawFullPath, 'stop');
 
+         end
+        
+        
     otherwise
         error('bad filetype. Time to reconsider your life choices');
 end
@@ -259,6 +273,7 @@ fclose(fidout);
 
 fprintf('%f0.1s: CONVERSION COMPLETE!', toc)
 
+dbclear if error
 
 end
 %% TEST ZONE
