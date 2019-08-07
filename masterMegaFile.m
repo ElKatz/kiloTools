@@ -165,13 +165,13 @@ delete(ops.fproc);
 % load "samples to seconds map" (created during 'convertRawToDat.m'), 
 % transform spike times in samples to spike times in seconds and store.
 disp('Loading samples-to-seconds map.');
-load(fullfile(ops.outputFolder, 'sampsToSecsMap.mat'));
+load(fullfile(ops.root, 'sampsToSecsMap.mat'));
 disp('Map loaded - transforming spike times from samples to seconds.')
-spikeTimesSamples = readNPY(fullfile(ops.outputFolder, ...
+spikeTimesSamples = readNPY(fullfile(ops.root, ...
     'spike_times.npy'));
 spikeTimesSeconds = sampsToSecsMap(spikeTimesSamples);
 disp('Saving spike times in seconds to .npy file.')
-writeNPY(spikeTimesSeconds, fullfile(ops.outputFolder, ...
+writeNPY(spikeTimesSeconds, fullfile(ops.root, ...
     'spike_times_seconds.npy'));
 
 %% ding!
