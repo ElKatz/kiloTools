@@ -12,24 +12,24 @@ Functions in the kiloTools repo rely on the following repos:
 ## General organization
 The toolbox takes you from raw ephys file (e.g. plx) to matlab-based sorted data. Here are the main steps & assocaited fucntions:
 
-**conversion** - `convertRawToDat.m` converts raw files (e.g. .plx, .mpx..) to format appropriate for kilo (.dat). (may also perform some basic pre-processing to aid in spike sorting e.g. common mean subtraction & artifact removal but I find that kilo deals with idiosycracies well enough on its own so I don't use'em).  `convertRawToDat.m` also extracts a vector of time samples in real time (as opposed to sample number) and saves it. A seperate function extracts strobed info (`getStrobedFromRaw.m`).
+**conversion** - `convertRawToDat.m` converts raw files (e.g. .plx, .mpx..) to format appropriate for kilo (.dat). (may also perform some basic pre-processing to aid in spike sorting e.g. common mean subtraction & artifact removal but I find that kilo deals with idiosycracies well enough on its own so I don't use'em).  `convertRawToDat.m` also extracts a vector of time samples in real time (as opposed to sample number) and saves it as `sampsToSecsMap.mat`, and extracts strobed info and saves it as `strobedEvents.mat`. 
 
-**spike sorting** - `masterMegaFile` - includes the 3 core files from the kilosort repo (masterfile, config, chanMap). Runs kiloSort on GPU/CPU.
+**spike sorting** - `masterMegaFile` - includes the 3 core files from the kilosort repo (masterfile, config, chanMap). Runs kiloSort on GPU/CPU. 
 
 **port to matlab** - `getSp` ports the kiloSorted data into matlab and into the `sp` struct for easy manipulation. `sp2su` - converts the sp struct into a `su` struct of size nNeurons with neuron specific properties.
 
 
 ## Workflow
-An example of my workflow can be found in the batch script `batch_convertAndSort.m`. In it you'll find somethling along the lines of:
+An example of my workflow can be found in the batch script `batch_convertAndSort.m`, which, as its name implies, converts and sorts. I use it routinely. In it, you'll find something along the lines of:
 
 ### convert your raw ephys to .dat file
 convert using `convertRawToDat.m`
 
 ### run kiloSort:
-run `masterMegaFile.m`
+run `masterMegaFile.m`. Each dataset gets its own `masterMegaFile.m`. So for each dataset I first copy the file into the dataset's folder, edit whichever parameters need editing, and then run it. 
 
 ### manual curation using phy
-Run Phy on your kiloSorted data. Completion of this stage will update the 'cluster_groups.csv' & 'spike_clusters.npy' files.
+After kiloSort is done running, you must run Phy on your kiloSorted data. Completion of this stage will update the 'cluster_groups.csv' & 'spike_clusters.npy' files. See https://github.com/cortex-lab/phy for details.
 
 ### get data into matlab
 Run `getSp`. getSp is a bastardized version of what was in the Spikes repo, and is used to extract useful info from the kiloSorted dataset. It is a single struct that has all cluster IDs, spike times, templates, and more and more. 
