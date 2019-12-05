@@ -21,14 +21,16 @@ function [paths] = addPathsForSpikeSorting
 
 % addpaths
 if contains(hostName, 'DESKTOP-KEJGC64', 'IgnoreCase', 1)
-    % Dell spike sorter in Leor office
-    paths.kiloTools = 'D:\Code\Toolboxes\kiloTools';
-    paths.kiloSort  = 'D:\Code\Toolboxes\KiloSort-master';
-    paths.npymatlab = 'D:\Code\Toolboxes\npy-matlab';
+    % Dell spike sorter in NIH krauzlis rig space 
+    paths.lnkToolbox    = 'D:\Code\Toolboxes\0-lnkToolbox';
+    paths.kiloTools     = 'D:\Code\Toolboxes\kiloTools';
+    paths.kiloSort      = 'D:\Code\Toolboxes\KiloSort-master';
+    paths.npymatlab     = 'D:\Code\Toolboxes\npy-matlab';
     
 elseif contains(hostName, 'LA-CPS828317MN-Huk-2.local', 'IgnoreCase', 1) || ... % Leor MacBookPro
         contains(hostName, 'NEIK2A79LK07A', 'IgnoreCase', 1) % Leor NIH iMac
     
+    paths.lnkToolbox    = '~/Dropbox/Code/spike_sorting/0-lnkToolbox';
     paths.kiloTools      = '~/Dropbox/Code/spike_sorting/toolboxes/kiloTools';
     paths.spikes         = '~/Dropbox/Code/spike_sorting/toolboxes/spikes';
     paths.sortingQuality = '~/Dropbox/Code/spike_sorting/toolboxes/sortingQuality';

@@ -18,18 +18,19 @@ performKiloSort     = true;
 
 %% list of paths to raw ephys files
 
-fs              = 40000;
-nCh             = 33;
-Nfilt           = 32*3;     % number of clusters to use (2-4 times more than Nchan, should be a multiple of 32)
+fs              = 44000;
+nCh             = 24;
+Nfilt           = 32*2;     % number of clusters to use (2-4 times more than Nchan, should be a multiple of 32)
 % Nfilt           = 48*3; 
 
-probeGeometry   = 'dualLinear'; % see probeGeometry2coords.m for options
+probeGeometry   = 'linear'; % see probeGeometry2coords.m for options
 opts.commonAverageReferencing = true;
-opts.specificChannels = 65:96;
+
 
 folderList = {...
-%    'D:\Data\katz\fstTest\170421\',...
-    'Y:\LAB PROJECTS\scInactivateAndRecord\data\ramsey20190920\'...
+   'Z:\LAB PROJECTS\fstAttention\data\fst\rigF\20170613\',...
+%     'Y:\LAB PROJECTS\scDualVprobe\data\ram20190805a\',...
+
     };
 
 nFiles = numel(folderList);
