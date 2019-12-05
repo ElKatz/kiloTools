@@ -16,6 +16,9 @@ function [samples, datPath, combo] = convertRawToDat(rawFullPath, opts)
 %                   folder as raw file)
 %   .commonAverageReferencing - will subtract average over channels
 %   .removeArtifacts - enter at own risk!
+%   .specificChannels - user can select which plexon channels to use for
+%                       conversion. remember, this must be in
+%                       plexon-numbering, eg SPKC1 is usually ch num 65.
 %
 % OUTPUT:
 %   samples - [nChannels, nSamples] consisting of all continuous data
@@ -110,19 +113,30 @@ switch rawFileType
         for ii = 1:nCh
             chNameList{ii} = adChName(ii,:);
         end
-        
-        % get indices for the spike channels contunous ("SPKC")
-        spkChannelStr = 'SPKC';
         idxSpkCh      = false(numel(chNameList),1);
-        for iCh = 1:numel(chNameList)
-            if strfind(chNameList{iCh}, spkChannelStr)
-                idxSpkCh(iCh) = true;
-            else
-                idxSpkCh(iCh) = false;
+        
+        % if user provided specific channels to use for conversion, take
+        % them:
+        if isfield(opts, 'specificChannels') && ~isempty(opts.specificChannels)
+            idxSpkCh(opts.specificChannels) = true;
+        else
+            % otherwise, figure out which spike-continuous channels have
+            % data and grab'em:
+            
+            % get indices for the spike channels contunous ("SPKC")
+            spkChannelStr = 'SPKC';
+            spkChannelStr2 = 'CSPK'; % for alphaOmega converted mpx to plx files....
+            for iCh = 1:numel(chNameList)
+                if ~isempty(strfind(chNameList{iCh}, spkChannelStr)) || ~isempty(strfind(chNameList{iCh}, spkChannelStr2))
+                    idxSpkCh(iCh) = true;
+                else
+                    idxSpkCh(iCh) = false;
+                end
             end
         end
-        % get number of spikes counts per ad channel and get indices for those that
-        % have data:
+        
+        % get number of spikes counts per ad channel and get use only 
+        % those that have data:
         [~, samplecounts] = plx_adchan_samplecounts(rawFullPath);
         idxDataCh = samplecounts~=0;
         % get indices for channels that are both spk channels & have data:
@@ -189,8 +203,8 @@ switch rawFileType
         % read the strobed word info (values & time stamps):
          switch rawFileType
             case 'plx'
-                [~, strobedEvents.eventInfo.Ts, strobedEvents.eventInfo.Strobed] = plx_event_ts(filename, 257);
-                
+                [~, strobedEvents.eventInfo.Ts, strobedEvents.eventInfo.Strobed] = plx_event_ts(rawFullPath, 257);
+                % no start/stop...
             case 'pl2'
                 strobedEvents.eventInfo = PL2EventTs(rawFullPath, 'Strobed');
 
