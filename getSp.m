@@ -4,9 +4,15 @@ function sp = getSp(ksDir, varargin)
 % get a spike struct from a kiloSort output directory (ksDir)
 % The function reads npy files from the ksDir to populate the sp struct
 % with all you ever dreamt of and more.
+% 
+% It gets all spike info and computes certain spike metrics such as ISI
+% violation and cluster quality using routines stolen from CortexLab, using
+% the sqKilosort.computeAllMeasures function.
+%
 % INPUT:
 %   ksDir - path to directory of kiloSort output
-%   optional:
+%   varargin:
+%   (see default wihin code)
 %       waves   - if true, adds individual waveforms to the strcut (time
 %                 consuming, so default is false)
 %       exNoise - if true, excludes noise clusters (as defined in phy)
@@ -14,6 +20,9 @@ function sp = getSp(ksDir, varargin)
 %       loadPCs - if true, loads PCs.
 %       waveWinT - [2x1] vector of time before & after spike time to extract
 %                 the full waveform. in ms.
+%
+% OUTPUT:
+%   sp - struct with all the goodies you need to access your spike data. 
 
 
 %% info:
@@ -56,7 +65,8 @@ function sp = getSp(ksDir, varargin)
 
 
 
-%%
+%% defaults: 
+
 p = inputParser;
 p.addOptional('waves', false);
 p.addOptional('exNoise', true);

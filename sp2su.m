@@ -1,7 +1,17 @@
 function su = sp2su(sp, ksDir)
+%   su = sp2su(sp, ksDir)
 %
 % converts the session-level 'sp' struct into a structarray for single
 % untis: 'su', of size nUnits.
+% This is mostly for convenience as 'su' holds unit-specific information
+% (eg spike times, ISI violations, unit score etc...)
+%
+% INPUT:
+%   sp - the 'sp' struct created by getSp.m
+% 
+% OUTPUT:
+%   su - the 'su' stuct with unit-specific data. 
+
 
 disp('Converting ''sp'' struct into single-unit struct ''su'':...')
 % number of single units:
