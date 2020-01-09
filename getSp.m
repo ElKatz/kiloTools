@@ -23,7 +23,7 @@ function sp = getSp(ksDir, varargin)
 %
 % OUTPUT:
 %   sp - struct with all the goodies you need to access your spike data. 
-
+% 
 
 %% info:
 
