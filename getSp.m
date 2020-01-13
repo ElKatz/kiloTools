@@ -277,7 +277,7 @@ if p.Results.medWave
     for iS = 1:sp.nClusters 
         medWfPerCh              = squeeze(sp.medWfs(iS,:,:))';
         medWfAmpPerCh           = max(medWfPerCh) - min(medWfPerCh);
-        sp.medWfPeakCh(iS)      = find(medWfAmpPerCh == max(medWfAmpPerCh), 1);
+        sp.peakCh(iS)           = find(medWfAmpPerCh == max(medWfAmpPerCh), 1);
         sp.medWfOnPeakCh(iS,:)  = medWfPerCh(:, sp.medWfPeakCh(iS));
     end
     
