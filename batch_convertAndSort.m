@@ -19,22 +19,28 @@ performKiloSort     = true;
 %% list of paths to raw ephys files
 
 fs              = 40000;
-nCh             = 33;
+nCh             = 32;
 Nfilt           = 32*3;     % number of clusters to use (2-4 times more than Nchan, should be a multiple of 32)
-% Nfilt           = 48*3; 
 
-probeGeometry   = 'dualLinear'; % see probeGeometry2coords.m for options
-opts.commonAverageReferencing = true;
-opts.specificChannels = 65:96;
+% set your options:
+probeGeometry                   = 'linear50'; % see probeGeometry2coords.m for options
+opts.commonAverageReferencing   = false;
+opts.specificChannels           = 65:96;
+if opts.specificChannels
+    nCh = length(opts.specificChannels);
+end
+opts.plotProbeVoltage           = true;
+opts.removeArtifacts            = true;
 
+% input your folders:
 folderList = {...
-%    'D:\Data\katz\fstTest\170421\',...
-    'Y:\LAB PROJECTS\scInactivateAndRecord\data\ramsey20190920\'...
+%   'Y:\LAB PROJECTS\scInactivateAndRecord\data\ramsey20190920\'...
+%     'Y:\LAB PROJECTS\scInactivateAndRecord\data\ramsey20191016\'...
+%     'Y:\LAB PROJECTS\scInactivateAndRecord\data\ramsey20191121\'...
+    'Y:\LAB PROJECTS\scInactivateAndRecord\data\ramsey20191126\'...
+%  'Y:\LAB PROJECTS\scInactivateAndRecord\data\ramsey20191205\'
     };
-
 nFiles = numel(folderList);
-
-
 
 % Make list of dat files by adding .dat and inserting 'kiloSorted' folder:
 rawPath         = cell(nFiles,1);
@@ -77,6 +83,13 @@ for iF = 1:nFiles
         end
     end
     
+end
+
+try
+    load gong
+    soundsc(y, Fs)
+%     evalc('soundsc(double(aiffread(''/System/Library/Sounds/Glass.aiff''))'',50000)');
+catch
 end
 
 %% NOW YOU SORT BY HAND.

@@ -1,9 +1,22 @@
-function [hA] = plot_probeVoltage(samples)
+function [hA] = plot_probeVoltage(samples, skip)
+%   [hA] = plot_probeVoltage(samples, skip)
+%
+% Quick function to plot multi-channel probe voltage traces. 
+% INPUT:
+%   samples - [nCh, nSamples] 'samples' matrix used in convertToDat.m 
+%   skip    - optional. determines how many samples to skip in plotting
+% OUTPUT:
+%   hA      - handle to figure axis
 
 %%
+
+disp('Plotting probe voltages...')
+figure;
 hold on;
 
-skip = 1e2;
+if ~exist('skip', 'var')
+    skip = 1e2;
+end
 
 nCh      = size(samples,1);
 nSamples = size(samples, 2);

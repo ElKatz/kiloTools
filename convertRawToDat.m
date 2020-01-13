@@ -19,6 +19,7 @@ function [samples, datPath, combo] = convertRawToDat(rawFullPath, opts)
 %   .specificChannels - user can select which plexon channels to use for
 %                       conversion. remember, this must be in
 %                       plexon-numbering, eg SPKC1 is usually ch num 65.
+%   .plotProbeVoltage - if true, spits out a figure of the probe's voltage
 %
 % OUTPUT:
 %   samples - [nChannels, nSamples] consisting of all continuous data
@@ -104,7 +105,7 @@ switch rawFileType
     
     case {'plx', 'pl2'}
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %%% plx plx plx plx plx plx plx plx plx plx plx plx plx plx %%%
+        %%% pl plx plx plx plx plx plx plx plx plx plx plx plx plx %%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         % create a list of all ad continuous channel names in cell array:
@@ -154,18 +155,24 @@ switch rawFileType
         [~,   adChNumber]   = plx_ad_chanmap(rawFullPath);
         spkChNumber = adChNumber(idxGoodCh);
         fprintf('%0.1fs: Getting data from %0.0d spike channels!\n', toc, sum(idxGoodCh))
+        hWait = waitbar(0, 'Converting channels...');
         for iCh = 1:nChannels
             tChRead(iCh) = toc;
             fprintf('\t%0.1fs: read channel #%0.0d \n', tChRead(iCh), spkChNumber(iCh));
             % data matrix 'samples':
             samples(iCh,:) = adReadWrapper(rawFullPath, spkChNumber(iCh)); % returns signal in miliVolts
+            waitbar(iCh/nChannels, hWait, ['Converting channel ' num2str(iCh) ' of ' num2str(nChannels)]);
         end
+        close(hWait)
         
+        if isfield(opts, 'plotProbeVoltage') && opts.plotProbeVoltage
+            plot_probeVoltage(samples, 1e3);
+        end
         %%  extract timing information from raw file in "real" time
 
         %
         % 'tsMap' has a timestamp for every sample recorded. This will be a
-        % vecotor of size nSamples. tsMap is used to convert from the spike 
+        % vector of size nSamples. tsMap is used to convert from the spike 
         % index output of kiloSort (these are simply integers that indicate 
         % which sample number each spike occurred at), to time (in seconds)
         % relative to the beginning of the ephys recording.
@@ -221,6 +228,7 @@ end
 
 %% subtract mean across channels:
 if opts.commonAverageReferencing
+    disp('Performing common average subtraction...')
     samplesMean = int16(mean(samples));
     % might wanna save out the samplesMean in case we want to view
     % it...
@@ -236,9 +244,22 @@ end
 %% remove artifacts:
 
 if opts.removeArtifacts
+    disp('Removing artifacts...')
     % set the standard deviation threshold:
-    sdThresh            = 10;
-    sdMedAbs            = std(median(abs(single(samples))));
+    sdThresh            = 3.5;
+    medAbs              = median(abs(single(samples)));
+    sdMedAbs            = std(medAbs);
+    if isfield(opts, 'removeArtifactsVisualize') && opts.removeArtifactsVisualize
+        figure, 
+        hold on
+        plot(medAbs(1:1e2:end));
+        hL(1) = line(xlim, [sdThresh*sdMedAbs sdThresh*sdMedAbs], 'Color', 'k');
+        hL(2) = line(xlim, [sdThresh/2*sdMedAbs sdThresh/2*sdMedAbs], 'Color', 'r');
+        hL(3) = line(xlim, [sdThresh*2*sdMedAbs sdThresh*2*sdMedAbs], 'Color', 'g');
+        legend(hL, {'sdTh', 'sdTh/2', 'sdTh*2'})
+        
+    end
+    % get artifact indices:
     idxBad              = median(abs(single(samples)) > (sdThresh*sdMedAbs));
     % remove the "bad" samples from 'samples' matrix:
     samples(:, idxBad)  = [];
@@ -247,6 +268,12 @@ if opts.removeArtifacts
     sampsToSecsMap(idxBad) = []; 
          
     fprintf('removed %0.0d of %0.0d samples, (%0.3f percent)\n', sum(idxBad), numel(idxBad), mean(idxBad)*1e2);
+    
+    if isfield(opts, 'plotProbeVoltage') && opts.plotProbeVoltage
+        plot_probeVoltage(samples, 1e3);
+        supertitle('AFTER ARTIFACT REMOVAL')
+    end
+        
 end
 
 
@@ -275,7 +302,6 @@ save(fullfile(opts.outputFolder, 'convertInfo.mat'),  'info');
 
 % save sampsToSecsMap (has to be 7.3 cause these can get BIG):
 save(fullfile(opts.outputFolder, 'sampsToSecsMap.mat'),  'sampsToSecsMap', '-v7.3')
-
 
 % save strobe info:
 save(fullfile(opts.outputFolder, 'strobedEvents.mat'),  'strobedEvents')
