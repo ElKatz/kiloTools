@@ -278,7 +278,7 @@ if p.Results.medWave
         medWfPerCh              = squeeze(sp.medWfs(iS,:,:))';
         medWfAmpPerCh           = max(medWfPerCh) - min(medWfPerCh);
         sp.peakCh(iS)           = find(medWfAmpPerCh == max(medWfAmpPerCh), 1);
-        sp.medWfOnPeakCh(iS,:)  = medWfPerCh(:, sp.medWfPeakCh(iS));
+        sp.medWfOnPeakCh(iS,:)  = medWfPerCh(:, sp.peakCh(iS));
     end
     
     if p.Results.visualize
