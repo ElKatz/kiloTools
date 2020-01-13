@@ -86,7 +86,6 @@ info.ksDir          = ksDir;
 info.depth          = [];
 info.dTip2lowestCh  = [];
 info.b              = [];
-info.b              = [];
 
 %% LOAD UP DATA FROM npy & csv FILES:
 
@@ -210,11 +209,18 @@ sp.pcFeat           = pcFeat;
 sp.pcFeatInd        = pcFeatInd;
 sp.wf               = [];
 
-% oh, and alos get sort quality meausres:
+%% Sort quality meausres:
 disp('Computing sort quality measures...')
-[~, sp.uQ, sp.cR, sp.isiV] = sqKilosort.computeAllMeasures(ksDir);
-sp.cR(isnan(sp.cR))=0;
-    
+
+%   uQ   - unitQuality AKA isolation distance
+%   cR   - contamination rate = the proportion of spikes inside the cluster 
+%          boundary that aren't from the cluster (false positive rate)
+%   isiV - isi Violations = the estimated false positive rate of your spike
+%          train, based on the rate of refractory period violations.
+
+[~, sp.uQ, sp.cR] = sqKilosort.maskedClusterQuality(ksDir);
+[sp.isiV_fpRate, sp.isiV_rate] = compute_isiViolations(ksDir);
+   
 
 %% waves:
 % if you wish to get waveforms (time consuming), this is where it happens:
@@ -284,8 +290,11 @@ end
 
 if p.Results.save
     save(fullfile(ksDir, 'sp.mat'), '-struct', 'sp')
+    disp('Done saving ''sp''')
+else
+    disp('not saving')
 end
-disp('Done saving ''sp''')
+
 
 disp('-------------------')
 disp('DONE! Enjoy your sp')
