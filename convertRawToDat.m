@@ -1,15 +1,15 @@
-function [samples, datPath, combo] = convertRawToDat(rawFullPath, opts)
+function [samples, datPath] = convertRawToDat(rawFullPath, opts)
 %   [samples, datPath] = convertRawToDat(rawFullPath, opts)
 %
 % Converts continuous data from raw ephys file to matrix 'samples' of size:
-% [nSamples, nChannels] and saves as binary .dat file in same folder as
-% ephys file (unless specified otherwise in opts)
+% [nSamples, nChannels]. Created a directory titled 'kiloSorted' in same 
+% folder as ephys file (unless specified otherwise in opts) and saves 
+% the 'samples' matrix as binary .dat file within 'kiloSorted'
+%
 % INPUT:
 %   rawFullPath  - Optional. full path to raw ephys data file.
 %                   This file can be 'plx', 'mpx', 'oe', whatever, as long
 %                   as it contains the continuous voltage traces.
-%
-% !!!!! AT THE MOMENT, THIS FUNCTION ONLY DEALS WITH plx/pl2 FILES !!!!!
 %
 %   opts - (optional) struct of options:
 %   .outputFolder - full path to folder to save dat file (default: same
@@ -24,6 +24,7 @@ function [samples, datPath, combo] = convertRawToDat(rawFullPath, opts)
 % OUTPUT:
 %   samples - [nChannels, nSamples] consisting of all continuous data
 %   datPath - path to the .dat file
+
 
 
 % 2do:

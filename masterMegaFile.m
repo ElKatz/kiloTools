@@ -4,17 +4,28 @@ function [] = masterMegaFile(datPath, fs, nCh, probeGeometry, Nfilt)
 % 3 files are unnecessarily messy and I'm "1 file to rule them all" kinda 
 % guy so I've combined them all into this masterMegaFile.m. 
 %
-% !!! this m file should copied into each directory you wish to sort !!!
+% !!! this m file should copied into each directory you wish to sort. The 
+% copying can be done manually or automatically, as I have implemented, for
+% example, in batch_convertAndSort.m.
 %
-% Instructions:
-%   - Either define your dat file folder and file within the function 
-%    ('datFolder' & 'datFile') or provide full path as input ('datPath'),
-%    see SELECT THY DATASET section.
-%   - verify paths to necessary toolboxes are correct
-%   - go over all parameteres below and make sure they are accurate.
-%     Especially in the chanMap section (e.g. fs, nChannels etc...)
-
-
+% !!! this file has set many of the less-frequently-used parameters of
+% kiloSort to my(!) liking, in the 'ops' struct. In all likelihood, you'll
+% want the same settings. But it is your responsibility to make sure. 
+%
+% INPUT:
+%   datPath         - full path to binary dat file which you wish to sort
+%   fs              - sampling rate (Hz)
+%   nCh             - number of channels in your dat file
+%   probeGeometry   - string. eg 'linear50, 'dualLinear'... 
+%                     see probeGeometry2coords.m for further details
+%   Nfilt           - number of template filters you wish to use for sort. 
+%                     kiloSort documentation recommends 2-4 times the
+%                     number of channels in your file, and multiples of 32.
+% OUTPUT:
+%   no matlab output. 
+%   Function saves a bunch of kiloSort output (m-files and npy files) into
+%   the same folder as the .dat file (likely 'kiloSorted' folder, created
+%   during conversion)
 
 %% SELECT THY DATASET:
 % you can either input the full path to your dat file (datPath) to the
