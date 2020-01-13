@@ -34,14 +34,14 @@ classdef clust < handle
                 obj(iS).uQ              = sp.uQ(iS);
                 obj(iS).cR              = sp.cR(iS);
                 obj(iS).isiV_fpRate     = sp.isiV_fpRate(iS);
-                obj(iS).isiV_rate       = sp.isiV_rate(iS);
+                obj(iS).isiV_rate        = sp.isiV_rate(iS);
                 if ~isempty(sp.wf)
-                    obj(iS).wf          = squeeze(sp.wf(:, :, spikeIdx));
+                    obj(iS).wf           = squeeze(sp.wf(:, :, spikeIdx));
                 else
-                    obj(iS).wf          = [];
+                    obj(iS).wf           = [];
                 end
-                obj(iS).peakCh          = sp.peakCh(iS);
-                obj(iS).medWfOnPeakCh   = sp.medWfOnPeakCh(iS,:);
+                obj(iS).medWfPeakCh      = sp.peakCh(iS);
+                obj(iS).medWfOnPeakCh    = sp.medWfOnPeakCh(iS,:);
                 %     su(iS).medWfPerChannel  = squeeze(sp.medWfs(iS,:,:))';
                 %     medWfAmpPerChannel      = max(su(iS).medWfPerChannel) - min(su(iS).medWfPerChannel);
                 %     su(iS).medWfPeakChannel             = find(medWfAmpPerChannel == max(medWfAmpPerChannel), 1);
