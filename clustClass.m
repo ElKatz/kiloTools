@@ -169,6 +169,7 @@ classdef clustClass < handle
         
         function plot_text(obj)
             %% text:
+            % ADD TO TEXT WHETHER CLUSTER WAS CONDIFERED GOOD OR MUA
             title('info')
             hold on
             axis([0 1 0 1])

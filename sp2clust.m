@@ -1,6 +1,6 @@
 function clust = sp2clust(sp, ksDir)
 
-
+clear clust;
 nClu = numel(sp.clusterId);
 for iS = 1:nClu
     clust(iS) = clustClass(sp, sp.clusterId(iS));

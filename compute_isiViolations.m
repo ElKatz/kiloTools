@@ -9,7 +9,7 @@ paramsPath= fullfile(resultsDirectory,'params.py');
 %% 
 
 refDur = 0.001;     % estiamtion of refractory period duration (lnk: was 0.0015)
-minISI = 0.0005;    % minISI
+minISI = 0.0005;    % min possible ISI given waveform length (lnk: this is only used to compute the false positive rate);
 
 fprintf(1, 'loading data for ISI computation\n');
 if exist(spikeClustersPath)
