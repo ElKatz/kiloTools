@@ -1,4 +1,16 @@
 classdef clustClass < handle
+    % An individual cluster-based class that allows for single cluster
+    % based analyses.
+    %
+    % clust = clustClass;
+    %   Initializes the clust class.
+    %
+    % clust.sp2clust_forClusterId(sp, clusterId);
+    %   Converts the 'sp' struct into the 'clustClass' with all the
+    %   properties listed below.
+    %   'sp' - output of function getSp.m (from kiloTools github repo)
+    %   'clusterId' -
+    %
     
     properties(GetAccess='public', SetAccess='protected')
         info            = [];       % Can't hurt to carry some info
@@ -11,18 +23,19 @@ classdef clustClass < handle
         isiV_fpRate     = [];       % isi violation false positive rate (see sqKilosort.computeAllMeasures.m)
         wf              = [];       % individual waveforms
         peakCh          = [];       % the channel which has the peak amplitude waveform
+        distToTip       = [];       % distnace from peakCh to electrode tip (in order to compute depth given tip depth)
         medWfOnPeakCh   = [];       % The median waveform on its peak channel
         defaultClr      = [];       % default color for this unit in plots
     end
     
-    methods
+    methods(Static=true)
         
-        function obj = sp2clust_forClusterId(obj, sp, clusterId)
-            %
-            % converts the session-level 'sp' struct into a structarray for single
-            % untis: 'su', of size nUnits.
+        function obj = clustClass(sp, clusterId)
             
-            disp(['Constructing clustClass for clusterId ' num2str(clusterId)])
+            if nargin < 2
+                error('Must provide ''sp'' struct and ''clusterId'' for which you wish to constrcut this clustClass');
+            end
+            disp(['Constructing clustClass for clusterId ' num2str(clusterId)]);
             
             % this cluster ID is unit# 'iS':
             iS = find(sp.clusterId == clusterId);
@@ -32,23 +45,31 @@ classdef clustClass < handle
             obj.score           = sp.clusterScore(iS);
             obj.uQ              = sp.uQ(iS);
             obj.cR              = sp.cR(iS);
-            obj.isiV_fpRate     = sp.isiV_fpRate(iS);
-            obj.isiV_rate       = sp.isiV_rate(iS);
+            if isfield('isiV_fpRate', sp)
+                obj.isiV_fpRate     = sp.isiV_fpRate(iS);
+                obj.isiV_rate       = sp.isiV_rate(iS);
+            else
+                obj.isiV_fpRate     = sp.isiV(iS);
+                obj.isiV_rate       = nan;
+            end
             if ~isempty(sp.wf)
                 obj.wf          = squeeze(sp.wf(:, :, spikeIdx));
             else
                 obj.wf          = [];
             end
-            obj.peakCh          = sp.peakCh(iS);
+            if isfield('peakCh', sp)
+                obj.peakCh          = sp.peakCh(iS);
+            else
+                obj.peakCh          = sp.medWfPeakCh(iS);
+            end
             obj.medWfOnPeakCh   = sp.medWfOnPeakCh(iS,:);
             obj.info            = sp.info;
             obj.info.Fs         = sp.sample_rate;
             tmpClr              = lines(64);
             obj.defaultClr      = tmpClr(iS);
-            
         end
         
-        
+        %%
         function plot_waveform(obj, clr)
             nWavesToPlot = 50;
             
@@ -64,7 +85,7 @@ classdef clustClass < handle
             xlabel('Time (s)')
         end
         
-
+        %%
         function plot_isiDist(obj, clr)
             isiDistMax          = 0.1;
             title('isi')
@@ -78,7 +99,7 @@ classdef clustClass < handle
             ylabel('Count')
         end
         
-        
+        %%
         function plot_isiDistZoom(obj, clr)
             isiDistMax          = 0.01;
             title('isi ZOOM')
@@ -92,7 +113,7 @@ classdef clustClass < handle
             ylabel('Count')
         end
         
-        
+        %%
         function plot_spCountOverTime(obj, clr)
             
             %% spike count over time:
@@ -158,13 +179,15 @@ classdef clustClass < handle
             
             text(0.1, yPosStart, ['uQ = ', sprintf('%.2f', obj.uQ)]);
             yPosStart = yPosStart+0.2;
-
+            
             text(0.1, 0.7, ['cR = ', sprintf('%.3f', obj.cR)]);
             yPosStart = yPosStart+0.2;
-
+            
             text(0.1, 0.5, ['isiV rate = ', sprintf('%.3f', obj.isiV_rate)]);
             yPosStart = yPosStart+0.2;
             
         end
     end
 end
+
+%%

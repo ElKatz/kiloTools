@@ -246,7 +246,7 @@ if p.Results.waves
     %     ss      = readNPY(fullfile(ksDir,  'spike_times.npy'));
     spikeTimesSamps      = double(sp.spikeTimesSamps);
     %
-    % get raw data around spiketimes (in samples) and populate 'wv' of size
+    % get raw data around spiketimes (in samples) and populate 'wf' of size
     % [nCh, nWaveSamples, nSpikes]
     wf = zeros(nCh, numel(win), numel(spikeTimesSamps), 'int16');
     % for each spikes:
