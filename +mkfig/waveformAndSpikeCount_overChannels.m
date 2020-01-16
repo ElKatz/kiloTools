@@ -21,7 +21,7 @@ plot_spikeCount_overChannles(sp);
 %%
 
 supertitle(sp.info.dsn, 12)
-formatFig(hFig, figSz)
+formatFig(hFig, figSz, 'nature')
 if isfield(opts, 'saveFigs') && opts.saveFigs == true
     if ~isfield(opts, 'dirFigs')
         opts.dirFigs = pwd;

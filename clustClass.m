@@ -49,8 +49,9 @@ classdef clustClass < handle
                 obj.isiV_fpRate     = sp.isiV_fpRate(iS);
                 obj.isiV_rate       = sp.isiV_rate(iS);
             else
-                obj.isiV_fpRate     = sp.isiV(iS);
-                obj.isiV_rate       = nan;
+                [obj.isiV_fpRate, numViolations] = ISIViolations(obj.times, 0.0005, 0.001);
+                nSpikes         = length(obj.times);    
+                obj.isiV_rate   = numViolations/nSpikes;
             end
             if ~isempty(sp.wf)
                 obj.wf          = squeeze(sp.wf(:, :, spikeIdx));
@@ -68,7 +69,8 @@ classdef clustClass < handle
             tmpClr              = lines(64);
             obj.defaultClr      = tmpClr(iS);
         end
-        
+    end
+    methods 
         %%
         function plot_waveform(obj, clr)
             nWavesToPlot = 50;
@@ -117,7 +119,7 @@ classdef clustClass < handle
         function plot_spCountOverTime(obj, clr)
             
             %% spike count over time:
-            nBinsForSpikeCount  = 50;
+            nBinsForSpikeCount  = 20;
             
             % this is hacky. I am not accounting for lapses in the recording. This
             % measure is only good enough for comparing units recorded at the same
@@ -128,7 +130,7 @@ classdef clustClass < handle
             edges       = linspace(obj.times(1), obj.times(end), nBinsForSpikeCount+1);
             spikeCounts = histc(obj.times, edges);
             spikeCounts = spikeCounts(1:end-1);
-            plot(spikeCounts, 'Color', clr, 'LineWidth', 2)
+            stairs(spikeCounts, 'Color', clr, 'LineWidth', 2)
             xlim([0, nBinsForSpikeCount])
             xlabel('bin #')
             ylabel('spCount per bin')

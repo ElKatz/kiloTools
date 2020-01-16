@@ -45,7 +45,7 @@ for iClu = idxSort
 end
 
 %%
-formatFig(hFig, figSz);
+formatFig(hFig, figSz, 'nature');
 supertitle(sp.info.dsn, 12)
 if isfield(opts, 'saveFigs') && opts.saveFigs == true
     if ~isfield(opts, 'dirFigs')
