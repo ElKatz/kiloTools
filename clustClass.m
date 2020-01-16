@@ -92,7 +92,7 @@ classdef clustClass < handle
             hold on
             isi = diff(obj.times);
             isi(isi > isiDistMax) = [];
-            histogram(isi, 50, 'FaceColor', clr);
+            histogram(isi, 30, 'FaceColor', clr);
             xlim([0 isiDistMax])
             line([0.001 0.001], ylim, 'Color', 'k', 'LineStyle', '--')
             xlabel('Time (s)')
@@ -106,7 +106,7 @@ classdef clustClass < handle
             hold on
             isi = diff(obj.times);
             isi(isi > isiDistMax) = [];
-            histogram(isi, 50, 'FaceColor', clr);
+            histogram(isi, 30, 'FaceColor', clr);
             xlim([0 isiDistMax])
             line([0.001 0.001], ylim, 'Color', 'k', 'LineStyle', '--')
             xlabel('Time (s)')
@@ -117,7 +117,7 @@ classdef clustClass < handle
         function plot_spCountOverTime(obj, clr)
             
             %% spike count over time:
-            nBinsForSpikeCount  = 100;
+            nBinsForSpikeCount  = 50;
             
             % this is hacky. I am not accounting for lapses in the recording. This
             % measure is only good enough for comparing units recorded at the same
@@ -167,25 +167,23 @@ classdef clustClass < handle
             xlabel('Time (s)')
         end
         
-        function plot_text(obj)
+        function plot_text(obj, textSize)
             %% text:
+            
             % ADD TO TEXT WHETHER CLUSTER WAS CONDIFERED GOOD OR MUA
             title('info')
             hold on
+            set(gca, 'Visible', 'off')
             axis([0 1 0 1])
-            yPosStart = 0.1;
-            
-            text(0.1, yPosStart, ['nSpikes = ', sprintf('%.0f', numel(obj.times))]);
-            yPosStart = yPosStart+0.2;
-            
-            text(0.1, yPosStart, ['uQ = ', sprintf('%.2f', obj.uQ)]);
-            yPosStart = yPosStart+0.2;
-            
-            text(0.1, 0.7, ['cR = ', sprintf('%.3f', obj.cR)]);
-            yPosStart = yPosStart+0.2;
-            
-            text(0.1, 0.5, ['isiV rate = ', sprintf('%.3f', obj.isiV_rate)]);
-            yPosStart = yPosStart+0.2;
+            if ~exist('textSize', 'var')
+                textSize = 6;
+            end
+            text(0.05, .9, ['ID = ', sprintf('%.0f', obj.id)], 'fontSize', textSize);
+            text(0.05, .8, ['score = ', sprintf('%.0f', obj.score)], 'fontSize', textSize);
+            text(0.05, .7, ['nSpikes = ', sprintf('%.0f', numel(obj.times))], 'fontSize', textSize);
+            text(0.05, .6, ['uQ = ', sprintf('%.2f', obj.uQ)], 'fontSize', textSize);
+            text(0.05, .5, ['cR = ', sprintf('%.3f', obj.cR)], 'fontSize', textSize);
+            text(0.05, .4, ['isiV rate = ', sprintf('%.3f', obj.isiV_rate)], 'fontSize', textSize);
             
         end
     end
