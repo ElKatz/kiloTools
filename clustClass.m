@@ -45,7 +45,7 @@ classdef clustClass < handle
             obj.score           = sp.clusterScore(iS);
             obj.uQ              = sp.uQ(iS);
             obj.cR              = sp.cR(iS);
-            if isfield('isiV_fpRate', sp)
+            if isfield(sp, 'isiV_fpRate')
                 obj.isiV_fpRate     = sp.isiV_fpRate(iS);
                 obj.isiV_rate       = sp.isiV_rate(iS);
             else
@@ -57,7 +57,7 @@ classdef clustClass < handle
             else
                 obj.wf          = [];
             end
-            if isfield('peakCh', sp)
+            if isfield(sp, 'peakCh')
                 obj.peakCh          = sp.peakCh(iS);
             else
                 obj.peakCh          = sp.medWfPeakCh(iS);
