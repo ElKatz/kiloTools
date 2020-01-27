@@ -119,7 +119,7 @@ switch rawFileType
         
         % if user provided specific channels to use for conversion, take
         % them:
-        if isfield(opts, 'specificChannels') && ~isempty(opts.specificChannels)
+        if isfield(opts, 'specificChannels') && opts.specificChannels
             idxSpkCh(opts.specificChannels) = true;
         else
             % otherwise, figure out which spike-continuous channels have
