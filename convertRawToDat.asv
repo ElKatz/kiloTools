@@ -238,7 +238,7 @@ switch rawFileType
 
         % construct a vector of time (in seconds) that corresponds to the
         % voltages in ai.Values.
-        ii = 1; % time is identical for all ai channels so I will run the following code on one of them
+        ii = 1; % time is identical for all ai channels so I will run the 
         aiTimeStamps = zeros(sum(ai(ii).FragCounts),1);
 
         % sample duration
@@ -257,7 +257,11 @@ switch rawFileType
     %% extract info:
     pl2 = PL2GetFileIndex(rawFullPath);
     
-   
+    
+    %% save
+    
+    save(fullfile(outFolder, 'aiChannels.mat'), 'aiTimeStamps', 'ai');
+    save(fullfile(outFolder, 'info_pl2.mat'), 'pl2');
     otherwise
         error('bad filetype. Time to reconsider your life choices');
 end
@@ -302,12 +306,6 @@ if opts.removeArtifacts
     % remove the "bad" samples from timing vector too:
 %     tsMap(idxBad)       = [];
     sampsToSecsMap(idxBad) = []; 
-    
-    % remove bad samples from ai:
-    aiTimeStamps(idxBad) = [];
-    for ii = 1:numel(ai)
-        ai(ii).Values(idxBad) = [];
-    end
          
     fprintf('removed %0.0d of %0.0d samples, (%0.3f percent)\n', sum(idxBad), numel(idxBad), mean(idxBad)*1e2);
     
@@ -332,7 +330,6 @@ info.spkChNumber    = spkChNumber;
 % info.strbChNumber   = strbChNumber;
 info.opts           = opts;
 info.datestr        = datestr(now, 'yyyymmddTHHMM');
-info.pl2            = pl2;
 
 
 % save info:
@@ -349,9 +346,6 @@ save(fullfile(opts.outputFolder, 'sampsToSecsMap.mat'),  'sampsToSecsMap', '-v7.
 % save strobe info:
 save(fullfile(opts.outputFolder, 'strobedEvents.mat'),  'strobedEvents')
 
-% save analog input:
-save(fullfile(outFolder, 'aiChannels.mat'), 'aiTimeStamps', 'ai');
-    
 % % ephys data to dat file:
 fidout = fopen(datPath, 'a'); % opening file for appending
 fwrite(fidout, samples, 'int16');
