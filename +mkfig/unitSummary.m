@@ -30,7 +30,7 @@ figSz           = [inchesPerCol * nPlots, inchesPerRow * nUnits];
 clr             = lines(nUnits);
 
 
-[~, idxSort] = sort([su.medWfPeakCh]);
+[~, idxSort] = sort([su.peakCh]);
 
 %%
 iPlot = 1;

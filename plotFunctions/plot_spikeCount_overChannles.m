@@ -10,7 +10,7 @@ chListFlipNeg   = fliplr(chListNeg);
 spCountPerCh    = nan(sp.n_channels_dat,10); % designing the array this way allows for spCounts from multiple units to be later plotted as 'stacked'
 
 for iS = 1:sp.nClusters
-    ch = sp.medWfPeakCh(iS);
+    ch = sp.peakCh(iS);
     spCount         = sum(sp.spikeTimesSamps(sp.spikeClusters == sp.clusterId(iS)));
     if spCount > 0
         % replace 1st nan with spCount:

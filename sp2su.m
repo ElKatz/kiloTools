@@ -27,8 +27,8 @@ for iS = 1:nSus
     su(iS).clusterScore     = sp.clusterScore(iS);
     su(iS).uQ               = sp.uQ(iS);
     su(iS).cR               = sp.cR(iS);
-    su(iS).sp.isiV_fpRate   = sp.sp.isiV_fpRate(iS);
-    su(iS).sp.isiV_rate     = sp.sp.isiV_rate(iS);
+    su(iS).sp.isiV_fpRate   = sp.isiV_fpRate(iS);
+    su(iS).sp.isiV_rate     = sp.isiV_rate(iS);
     if ~isempty(sp.wf)
         su(iS).wf           = squeeze(sp.wf(:, :, spikeIdx));
     else

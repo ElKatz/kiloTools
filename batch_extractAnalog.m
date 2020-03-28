@@ -1,12 +1,8 @@
-%% batch_convertAndSort
+%% batch_extractAnalog
 %
-% example script for batch conversion and sorting of raw ephys files.
-%
-% INSTRUCTIONS:
-% - provide script with list of files.
-% script will convert each raw file into .dat, will copy masterMegaFile.m
-% into each directory, and kiloSort each
-% - make sure you have correct path to kiloTools
+% ad hoc script to go over datasets that have been converted and sorted
+% before I had implemented the analog data extraction that is now part of
+% the conversion process.
 
 %% add necessary paths to toolboxes:
 cd('D:\Code\Toolboxes\kiloTools');

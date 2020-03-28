@@ -22,7 +22,7 @@ x  = 1:size(sp.medWfs, 3);
 nX = numel(unique(sp.xcoords));
 nY = numel(sp.ycoords);
 
-[~, idxSort] = sort(sp.medWfPeakCh);
+[~, idxSort] = sort(sp.peakCh);
 
 iPlot = 1;
 for iClu = idxSort
