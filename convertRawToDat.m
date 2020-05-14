@@ -172,8 +172,18 @@ switch rawFileType
         end
         close(hWait)
         
+        % % ephys data to dat file:
+        fidout = fopen(datPath, 'a'); % opening file for appending
+        fwrite(fidout, samples, 'int16');
+        fclose(fidout);
+        
+        %% plot voltages:
         if isfield(opts, 'plotProbeVoltage') && opts.plotProbeVoltage
+            hFig = figure;
             plot_probeVoltage(samples, 1e3);
+            supertitle([dsn ' - raw'])
+            formatFig(hFig, [6 12], 'nature')
+            saveas(hFig, fullfile(opts.outputFolder, 'probeVoltageRaw'), 'pdf');
         end
         %%  extract timing information from raw file in "real" time
 
@@ -213,6 +223,9 @@ switch rawFileType
             currentSample = chunkIndex(end)+1;
         end
           
+        
+
+
         %% extract strobed events:
         % read the strobed word info (values & time stamps):
          switch rawFileType
@@ -225,37 +238,122 @@ switch rawFileType
                 % read the time-stamps of recording start / stop events:
                 strobedEvents.startTs = PL2StartStopTs(rawFullPath, 'start');
                 strobedEvents.stopTs = PL2StartStopTs(rawFullPath, 'stop');
+                
+         end
+         
+         %% extract analog input channels
+         % Analog Inputs (AI) extracted differently in different systems:
+         %  In opx-A, AI are in the 4 topmost LFP channels.
+         %  In opx-D, they have dedicated channels termed "AI"
+         % I'm gonna make an assumption that if my input file is in the
+         % newer 'pl2' version, it is from opx-D, while if it is the older
+         % 'plx', it is opx-A. This assumption is not bulletproof, so
+         % proceed with caution...
+         tic
+         switch rawFileType
+             case 'plx'
+                 clear ai
+                 fpCh = [29 30 31 32]; % this is only correct for OUR setup. Different setups may have different channel numbers
+                 for iAi = 1:4
+                     [adfreq, n, ts, fn, ad] = plx_ad(rawFullPath, ['FP' num2str(fpCh(iAi))]);
+                     ai(iAi).Values        = ad;
+                     ai(iAi).FragTs        = ts;
+                     ai(iAi).FragCounts    = fn;
+                     ai(iAi).ADFreq        = adfreq;
+                 end
+                 
+                 
+             case 'pl2'
+                 clear ai
+                 ai(1) = PL2Ad(rawFullPath, 'AI01');
+                 ai(2) = PL2Ad(rawFullPath, 'AI02');
+                 ai(3) = PL2Ad(rawFullPath, 'AI03');
+                 ai(4) = PL2Ad(rawFullPath, 'AI04');
+                 
+         end
+         toc
+         % construct a vector of time (in seconds) that corresponds to the
+         % voltages in ai.Values.
+         ii = 1; % time is identical for all ai channels so I will run the following code on one of them
+         aiTimeStamps = zeros(sum(ai(ii).FragCounts),1);
+         
+         % sample duration
+         sampDur = 1/ai(ii).ADFreq;
+         
+         % how many fragments of recording?
+         nFrags = length(ai(ii).FragTs);
+         currentSample = 1;
+         for i = 1:nFrags
+             chunkIndex = currentSample:(currentSample + ai(ii).FragCounts(i) - 1);
+             chunkTimeStamps = ai(ii).FragTs(i) + (0:(ai(ii).FragCounts(i)-1))*sampDur;
+             aiTimeStamps(chunkIndex) = chunkTimeStamps;
+             currentSample = chunkIndex(end)+1;
+         end
+         
+         
+        %% extract LfP:
+        if opts.extractLfp 
+         % LFP channels are extracted differently in different systems:
+         %  In opx-A, LFP are on channels 1:(end-3) because AI is routed 
+         % through the top 4 channels.
+         %  In opx-D, they have dedicated channels termed "FP"
+         % I'm gonna make an assumption that if my input file is in the
+         % newer 'pl2' version, it is from opx-D, while if it is the older
+         % 'plx', it is opx-A. This assumption is not bulletproof, so
+         % proceed with caution...
+         tic
+         switch rawFileType
+             case 'plx'
+                 % this a little bit of a quick hack.
+                 % it wont fit other systems or confuigs. It relies on
+                 % particular input: single probe with 24 channels.
+                 clear lfp
+                 fpCh = 1:24; % this is only correct for OUR setup. Different setups may have different channel numbers
+                 for iFp = 1:numel(fpCh)
+                     [adfreq, n, ts, fn, ad] = plx_ad(rawFullPath, ['FP' sprintf('%0.2d', iFp)]);
+                     fp(iFp).Values        = ad;
+                     fp(iFp).FragTs        = ts;
+                     fp(iFp).FragCounts    = fn;
+                     fp(iFp).ADFreq        = adfreq;
+                 end
+                 
+                 
+             case 'pl2'
+                 % not yet supported....
+%                  gotta build this the right way
+            error('not supported yet. sorry')
 
          end
-        
-         %% extract analog input channels
-        
-        clear ai
-        ai(1) = PL2Ad(rawFullPath, 'AI01');
-        ai(2) = PL2Ad(rawFullPath, 'AI02');
-        ai(3) = PL2Ad(rawFullPath, 'AI03');
-        ai(4) = PL2Ad(rawFullPath, 'AI04');
-
-        % construct a vector of time (in seconds) that corresponds to the
-        % voltages in ai.Values.
-        ii = 1; % time is identical for all ai channels so I will run the following code on one of them
-        aiTimeStamps = zeros(sum(ai(ii).FragCounts),1);
-
-        % sample duration
-        sampDur = 1/ai(ii).ADFreq;
-
-        % how many fragments of recording?
-        nFrags = length(ai(ii).FragTs);
-        currentSample = 1;
-        for i = 1:nFrags
-            chunkIndex = currentSample:(currentSample + ai(ii).FragCounts(i) - 1);
-            chunkTimeStamps = ai(ii).FragTs(i) + (0:(ai(ii).FragCounts(i)-1))*sampDur;
-            aiTimeStamps(chunkIndex) = chunkTimeStamps;
-            currentSample = chunkIndex(end)+1;
+         toc
+         % construct a vector of time (in seconds) that corresponds to the
+         % voltages in ai.Values.
+         ii = 1; % time is identical for all ai channels so I will run the following code on one of them
+         fpTimeStamps = zeros(sum(fp(ii).FragCounts),1);
+         
+         % sample duration
+         sampDur = 1/fp(ii).ADFreq;
+         
+         % how many fragments of recording?
+         nFrags = length(fp(ii).FragTs);
+         currentSample = 1;
+         for i = 1:nFrags
+             chunkIndex = currentSample:(currentSample + fp(ii).FragCounts(i) - 1);
+             chunkTimeStamps = fp(ii).FragTs(i) + (0:(fp(ii).FragCounts(i)-1))*sampDur;
+             fpTimeStamps(chunkIndex) = chunkTimeStamps;
+             currentSample = chunkIndex(end)+1;
+         end
+            
+            
         end
-
+        
+        
     %% extract info:
-    pl2 = PL2GetFileIndex(rawFullPath);
+    switch rawFileType
+        case 'plx'
+                % dunno what the equivalent is
+        case 'pl2'
+            pl2 = PL2GetFileIndex(rawFullPath);
+    end
     
    
     otherwise
@@ -303,17 +401,11 @@ if opts.removeArtifacts
 %     tsMap(idxBad)       = [];
     sampsToSecsMap(idxBad) = []; 
     
-    % remove bad samples from ai:
-    aiTimeStamps(idxBad) = [];
-    for ii = 1:numel(ai)
-        ai(ii).Values(idxBad) = [];
-    end
-         
     fprintf('removed %0.0d of %0.0d samples, (%0.3f percent)\n', sum(idxBad), numel(idxBad), mean(idxBad)*1e2);
     
     if isfield(opts, 'plotProbeVoltage') && opts.plotProbeVoltage
         plot_probeVoltage(samples, 1e3);
-        supertitle('AFTER ARTIFACT REMOVAL')
+        supertitle([dsn ' - AFTER ARTIFACT REMOVAL'])
     end
         
 end
@@ -332,7 +424,11 @@ info.spkChNumber    = spkChNumber;
 % info.strbChNumber   = strbChNumber;
 info.opts           = opts;
 info.datestr        = datestr(now, 'yyyymmddTHHMM');
-info.pl2            = pl2;
+if exist('pl2', 'var')
+    info.pl2            = pl2;
+else
+    info.pl2            = [];
+end
 
 
 % save info:
@@ -350,12 +446,11 @@ save(fullfile(opts.outputFolder, 'sampsToSecsMap.mat'),  'sampsToSecsMap', '-v7.
 save(fullfile(opts.outputFolder, 'strobedEvents.mat'),  'strobedEvents')
 
 % save analog input:
-save(fullfile(outFolder, 'aiChannels.mat'), 'aiTimeStamps', 'ai');
+save(fullfile(opts.outputFolder, 'aiChannels.mat'), 'aiTimeStamps', 'ai');
     
-% % ephys data to dat file:
-fidout = fopen(datPath, 'a'); % opening file for appending
-fwrite(fidout, samples, 'int16');
-fclose(fidout);
+% save lfp:
+save(fullfile(opts.outputFolder, 'fpChannels.mat'), 'fpTimeStamps', 'fp');
+    
 
 fprintf('%f0.1s: CONVERSION COMPLETE!', toc)
 

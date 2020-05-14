@@ -11,7 +11,7 @@ function [hA] = plot_probeVoltage(samples, skip)
 %%
 
 disp('Plotting probe voltages...')
-figure;
+hA = gca;
 hold on;
 
 if ~exist('skip', 'var')

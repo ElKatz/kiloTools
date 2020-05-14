@@ -15,6 +15,12 @@ switch probeGeometry
         xcoords = zeros(nCh,1);
         ycoords = (((nCh-1) * ySpacing):-ySpacing:0)';
         kcoords = ones(nCh,1);
+    case 'linear100'
+        % linear geometry:
+        ySpacing = 100;
+        xcoords = zeros(nCh,1);
+        ycoords = (((nCh-1) * ySpacing):-ySpacing:0)';
+        kcoords = ones(nCh,1);
     case 'linear125'
         % linear geometry:
         ySpacing = 125;
